@@ -123,7 +123,14 @@
 
     switch ($scope.formContext) {
       case 'eventTab':
-        volBackbone.load();
+        volBackbone.load().catch(function(error) {
+          console.error("Failed to preload volunteer Backbone UI:", error);
+          CRM.alert(
+            ts('Failed to load volunteer management interface. Some features may not work. Please check the browser console for details.'),
+            ts('Loading Warning'),
+            'warning'
+          );
+        });
         var cancelCallback = function (projectId) {
           CRM.$("body").trigger("volunteerProjectCancel");
         };
@@ -141,6 +148,13 @@
           volBackbone.load().then(function () {
             CRM.volunteerPopup(ts('Define Volunteer Opportunities'), 'Define', projectId);
             $location.path("/volunteer/manage");
+          }).catch(function(error) {
+            console.error("Failed to load volunteer Backbone UI for Define popup:", error);
+            CRM.alert(
+              ts('Failed to load the Define Opportunities interface. Please check the browser console for details.'),
+              ts('Loading Error'),
+              'error'
+            );
           });
         };
         $scope.saveAndNextLabel = ts('Continue');

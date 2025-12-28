@@ -307,15 +307,23 @@
                 //I'm not sure what normally triggers this event, but when cramming it
                 //into angular the event isn't triggered. So I'm doing it here, otherwise
                 //The backbone stuff fails.
-                CRM.volunteerApp.trigger("initialize:before");
-
-                deferred.resolve(true);
+                if (CRM.volunteerApp && typeof CRM.volunteerApp.trigger === 'function') {
+                  CRM.volunteerApp.trigger("initialize:before");
+                  deferred.resolve(true);
+                } else {
+                  console.error("CRM.volunteerApp is not initialized. Backbone/Marionette may not be loaded.");
+                  deferred.reject(ts("Volunteer Backbone app failed to initialize"));
+                }
               },
-              function () {
-                console.log("Failed to load all backbone resources");
+              function (error) {
+                console.error("Failed to load backbone resources:", error);
                 deferred.reject(ts("Failed to load all backbone resources"));
               }
             );
+          }, function(error) {
+            // Error handler for API call failure
+            console.error("Failed to load backbone prerequisites:", error);
+            deferred.reject(ts("Failed to load volunteer backbone dependencies"));
           });
           return deferred.promise;
         }

@@ -46,7 +46,16 @@
             });
           },
           volunteerBackbone: function(volBackbone) {
-            return volBackbone.load();
+            return volBackbone.load().catch(function(error) {
+              console.error("Failed to load volunteer Backbone UI:", error);
+              CRM.alert(
+                ts('Failed to load volunteer management interface. Please check the browser console for details.'),
+                ts('Loading Error'),
+                'error'
+              );
+              // Return a rejected promise to prevent route from loading
+              throw error;
+            });
           }
         }
       });
