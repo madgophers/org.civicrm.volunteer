@@ -46,11 +46,27 @@
  * @access public
  */
 function civicrm_api3_volunteer_assignment_create($params) {
-  $result = CRM_Volunteer_BAO_Assignment::createVolunteerActivity($params);
-  if ($result) {
-    return civicrm_api3('volunteer_assignment', 'get', array('id' => $result));
+  try {
+    $result = CRM_Volunteer_BAO_Assignment::createVolunteerActivity($params);
+    if ($result) {
+      return civicrm_api3('volunteer_assignment', 'get', array('id' => $result));
+    }
+    return civicrm_api3_create_error('unable to create activity');
+  } catch (CiviCRM_API3_Exception $e) {
+    // Check if this is a conflict error
+    if ($e->getErrorCode() === 'volunteer_assignment_conflict') {
+      // Return the conflict details in the error
+      return civicrm_api3_create_error(
+        $e->getMessage(),
+        array(
+          'error_code' => 'volunteer_assignment_conflict',
+          'conflict_details' => $e->getExtraParams(),
+        )
+      );
+    }
+    // Re-throw other exceptions
+    throw $e;
   }
-  return civicrm_api3_create_error('unable to create activity');
 }
 
 /**
@@ -65,6 +81,14 @@ function _civicrm_api3_volunteer_assignment_create_spec(&$params) {
   $params['assignee_contact_id']['api.aliases'] = array('contact_id');
   $volunteerStatus = CRM_Activity_BAO_Activity::buildOptions('status_id', 'validate');
   $params['status_id']['api.default'] = array_search('Scheduled', $volunteerStatus);
+
+  // Conflict detection parameter
+  $params['force'] = array(
+    'title' => 'Force Assignment (Skip Conflict Check)',
+    'description' => 'Set to TRUE to skip conflict checking and allow double-booking of volunteers',
+    'type' => CRM_Utils_Type::T_BOOLEAN,
+    'api.default' => FALSE,
+  );
 }
 
 /**

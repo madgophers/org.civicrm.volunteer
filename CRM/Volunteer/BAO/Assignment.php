@@ -287,8 +287,11 @@ class CRM_Volunteer_BAO_Assignment extends CRM_Volunteer_BAO_Activity {
    * @param array $params
    *   An assoc array of name/value pairs. Either id or volunteer_need_id
    *   is required in the params array.
+   *   Optional params:
+   *   - force: (bool) If TRUE, skip conflict checking and allow double-booking
    * @return mixed
    *   Boolean FALSE on failure; activity_id on success.
+   * @throws CiviCRM_API3_Exception if conflict is detected
    */
   public static function createVolunteerActivity(array $params) {
     if (empty($params['id']) && empty($params['volunteer_need_id'])) {
@@ -300,6 +303,9 @@ class CRM_Volunteer_BAO_Assignment extends CRM_Volunteer_BAO_Activity {
     // Prevent activity type from being changed externally.
     $params['activity_type_id'] = self::getActivityTypeId();
 
+    // Get the assignment ID if we're updating
+    $assignment_id = !empty($params['id']) ? $params['id'] : NULL;
+
     if (empty($params['volunteer_need_id'])) {
       $params['volunteer_need_id'] = civicrm_api3('VolunteerAssignment', 'getvalue', array(
         'id' => $params['id'],
@@ -309,6 +315,34 @@ class CRM_Volunteer_BAO_Assignment extends CRM_Volunteer_BAO_Activity {
 
     $defaults = self::setActivityDefaults($params);
     $params = array_merge($defaults, $params);
+
+    // CHECK FOR CONFLICTS before creating assignment
+    // Get assignee_contact_id from params or from source_contact_id
+    $contact_id = NULL;
+    if (!empty($params['assignee_contact_id'])) {
+      $contact_id = $params['assignee_contact_id'];
+    } elseif (!empty($params['source_contact_id'])) {
+      $contact_id = $params['source_contact_id'];
+    }
+
+    // Only check conflicts if we have a contact ID and need ID
+    if ($contact_id && !empty($params['volunteer_need_id'])) {
+      $force = !empty($params['force']) ? TRUE : FALSE;
+      try {
+        CRM_Volunteer_BAO_ConflictChecker::checkConflictOrFail(
+          $contact_id,
+          $params['volunteer_need_id'],
+          $assignment_id,
+          $force
+        );
+      } catch (CiviCRM_API3_Exception $e) {
+        // Re-throw the exception so the API can handle it
+        throw $e;
+      }
+    }
+
+    // Remove 'force' param before passing to Activity API
+    unset($params['force']);
 
     // Might as well sync these, but seems redundant
     if (!isset($params['duration']) && isset($params['time_completed_minutes'])) {
