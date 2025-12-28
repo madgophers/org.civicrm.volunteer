@@ -901,10 +901,8 @@ class CRM_Volunteer_Upgrader extends CRM_Extension_Upgrader_Base {
    * @param string $unmet an extension name
    */
   public static function getUnmetDependencyErrorMessage($unmet) {
-    switch ($unmet) {
-      case 'org.civicrm.angularprofiles':
-        return ts('CiviVolunteer was installed successfully, but you must also install and enable the <a href="%1">Angular Profiles Extension</a> before you can manage volunteer projects.', array(1 => 'https://github.com/ginkgostreet/org.civicrm.angularprofiles', 'domain' => 'org.civicrm.volunteer'));
-    }
+    // Phase 0 (2025-12-28): Removed org.civicrm.angularprofiles dependency
+    // No extension dependencies required for CiviVolunteer (Modernized)
 
     CRM_Core_Error::fatal(ts('Unknown error key: %1', array(1 => $unmet, 'domain' => 'org.civicrm.volunteer')));
   }
@@ -919,8 +917,8 @@ class CRM_Volunteer_Upgrader extends CRM_Extension_Upgrader_Base {
     $manager = CRM_Extension_System::singleton()->getManager();
 
     $dependencies = array(
-      // @TODO move this config out of code
-      'org.civicrm.angularprofiles',
+      // Phase 0 (2025-12-28): Removed org.civicrm.angularprofiles dependency
+      // The extension now uses CiviCRM's native entityRef for profile selection
     );
 
     $unmet = array();
