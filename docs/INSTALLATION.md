@@ -1,6 +1,6 @@
 # CiviVolunteer Modernized - Installation Guide
 
-**Version:** 2.4.6 (Modernized with Phase 0 & Phase 1 improvements)
+**Version:** 2.5.0 (Modernized with Phase 0 & Phase 1 improvements)
 **Date:** 2025-12-28
 
 ## What's New in This Version
@@ -304,9 +304,9 @@ Not recommended for production - extensions share the same database tables.
 - Volunteers > Find Volunteers
 
 ✅ **Extensions page shows:**
-- Extension: CiviVolunteer
+- Extension: CiviVolunteer (Modernized)
 - Status: Enabled
-- Version: 2.4.6
+- Version: 2.5.0
 - No dependency warnings
 
 ✅ **Profile selector works:**

@@ -1,6 +1,7 @@
 # CiviVolunteer Modernization Plan
 ## Hybrid Approach: CiviVolunteer Backend + MyShift UI
 
+**Version:** 2.5.0 (Modernized)
 **Last Updated:** 2025-12-28 (REVISED)
 **Session ID:** claude/explore-codebase-structure-PKUon
 **Branch:** claude/explore-codebase-structure-PKUon

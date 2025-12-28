@@ -1,20 +1,20 @@
 <?xml version="1.0"?>
 <extension key="org.civicrm.volunteer" type="module">
   <file>volunteer</file>
-  <name>CiviVolunteer</name>
-  <description>The CiviVolunteer extension provides tools for signing up, managing, and tracking volunteers.</description>
+  <name>CiviVolunteer (Modernized)</name>
+  <description>Modernized volunteer management with conflict detection and simplified architecture. Provides tools for signing up, managing, and tracking volunteers without legacy dependencies.</description>
   <license>AGPL-3.0</license>
   <maintainer>
-    <author>Ginkgo Street Labs</author>
-    <email>ginkgomzd@fastmail.com</email>
+    <author>madgophers (Modernization)</author>
+    <email>info@madgophers.com</email>
   </maintainer>
-  <releaseDate>2024-10-24</releaseDate>
-  <version>2.4.6</version>
+  <releaseDate>2025-12-28</releaseDate>
+  <version>2.5.0</version>
   <compatibility>
     <ver>5.71</ver>
   </compatibility>
   <comments>
-    Developed by Ginkgo Street Labs and CiviCRM, LLC with contributions from the community. Special thanks to Friends of Georgia State Parks &amp; Historic Sites for funding the initial release, and to The Manhattan Neighborhood Network for funding the 1.4 release.
+    Modernized version with Phase 0 (removed org.civicrm.angularprofiles dependency) and Phase 1 (conflict detection for preventing double-booking). Original development by Ginkgo Street Labs and CiviCRM, LLC with contributions from the community. Special thanks to Friends of Georgia State Parks &amp; Historic Sites for funding the initial release, and to The Manhattan Neighborhood Network for funding the 1.4 release.
   </comments>
   <civix>
     <namespace>CRM/Volunteer</namespace>
