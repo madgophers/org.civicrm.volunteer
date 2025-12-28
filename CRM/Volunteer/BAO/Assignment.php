@@ -327,7 +327,17 @@ class CRM_Volunteer_BAO_Assignment extends CRM_Volunteer_BAO_Activity {
 
     // Only check conflicts if we have a contact ID and need ID
     if ($contact_id && !empty($params['volunteer_need_id'])) {
-      $force = !empty($params['force']) ? TRUE : FALSE;
+      // SECURITY: Only allow 'force' parameter for admins or users with 'edit all' permission
+      // This prevents regular coordinators from bypassing conflict detection
+      $force = FALSE;
+      if (!empty($params['force'])) {
+        if (CRM_Core_Permission::check('administer CiviCRM') ||
+            CRM_Volunteer_Permission::check('edit all volunteer projects')) {
+          $force = TRUE;
+        }
+        // If force was requested but user lacks permission, silently ignore
+        // (still check for conflicts)
+      }
       try {
         CRM_Volunteer_BAO_ConflictChecker::checkConflictOrFail(
           $contact_id,
