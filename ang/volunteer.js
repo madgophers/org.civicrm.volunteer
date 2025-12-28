@@ -213,6 +213,56 @@
         return deferred.promise;
       }
 
+      /**
+       * Loads Backbone and Marionette core libraries if not already loaded
+       */
+      function loadBackboneCore() {
+        var deferred = $q.defer();
+
+        // Check if Backbone and Marionette are already loaded
+        if (window.Backbone && CRM.BB && CRM.BB.Marionette) {
+          deferred.resolve(true);
+          return deferred.promise;
+        }
+
+        // Ensure jQuery and underscore are available globally
+        if (!window.jQuery) {
+          window.jQuery = CRM.$;
+        }
+        if (!window._) {
+          window._ = CRM._;
+        }
+
+        var coreScripts = [];
+
+        // Load Backbone if not present
+        if (!window.Backbone) {
+          coreScripts.push(CRM.config.resourceBase + 'bower_components/backbone/backbone.js');
+        }
+
+        // Load Marionette if not present
+        if (!CRM.BB || !CRM.BB.Marionette) {
+          coreScripts.push(CRM.config.resourceBase + 'bower_components/backbone.marionette/lib/backbone.marionette.js');
+        }
+
+        if (coreScripts.length > 0) {
+          loadNextScript(coreScripts, function() {
+            // Initialize CRM.BB namespace if needed
+            if (!CRM.BB) {
+              CRM.BB = { Marionette: window.Marionette };
+            }
+            deferred.resolve(true);
+          }, function(error) {
+            console.error("Failed to load Backbone/Marionette core:", error);
+            deferred.reject("Failed to load Backbone/Marionette dependencies");
+          });
+        } else {
+          deferred.resolve(true);
+        }
+
+        return deferred.promise;
+      }
+
       function loadScripts(scripts) {
         var deferred = $q.defer();
 
@@ -262,7 +312,7 @@
 
       return {
         verify: function() {
-          return (!!window.Backbone && verifyScripts() && verifySettings() && verifyTemplates());
+          return (!!window.Backbone && !!CRM.BB && !!CRM.BB.Marionette && verifyScripts() && verifySettings() && verifyTemplates());
         },
         load: function() {
           var deferred = $q.defer();
@@ -288,38 +338,45 @@
               CRM.volunteerBackboneSettings = true;
             }
 
-            if(!verifyScripts()) {
-              promises.push(loadScripts(resources.volunteer.values.scripts));
-            }
-
-            if(!verifyTemplates()) {
-              CRM.$.each(resources.volunteer.values.templates, function(index, url) {
-                promises.push(loadTemplate(index, url));
-              });
-            }
-
-            CRM.$.each(resources.volunteer.values.css, function(index, url) {
-              loadStyleFile(url);
-            });
-
-            $q.all(promises).then(
-              function () {
-                //I'm not sure what normally triggers this event, but when cramming it
-                //into angular the event isn't triggered. So I'm doing it here, otherwise
-                //The backbone stuff fails.
-                if (CRM.volunteerApp && typeof CRM.volunteerApp.trigger === 'function') {
-                  CRM.volunteerApp.trigger("initialize:before");
-                  deferred.resolve(true);
-                } else {
-                  console.error("CRM.volunteerApp is not initialized. Backbone/Marionette may not be loaded.");
-                  deferred.reject(ts("Volunteer Backbone app failed to initialize"));
-                }
-              },
-              function (error) {
-                console.error("Failed to load backbone resources:", error);
-                deferred.reject(ts("Failed to load all backbone resources"));
+            // Load Backbone and Marionette core libraries first
+            loadBackboneCore().then(function() {
+              // Now load volunteer-specific scripts
+              if(!verifyScripts()) {
+                promises.push(loadScripts(resources.volunteer.values.scripts));
               }
-            );
+
+              if(!verifyTemplates()) {
+                CRM.$.each(resources.volunteer.values.templates, function(index, url) {
+                  promises.push(loadTemplate(index, url));
+                });
+              }
+
+              CRM.$.each(resources.volunteer.values.css, function(index, url) {
+                loadStyleFile(url);
+              });
+
+              $q.all(promises).then(
+                function () {
+                  //I'm not sure what normally triggers this event, but when cramming it
+                  //into angular the event isn't triggered. So I'm doing it here, otherwise
+                  //The backbone stuff fails.
+                  if (CRM.volunteerApp && typeof CRM.volunteerApp.trigger === 'function') {
+                    CRM.volunteerApp.trigger("initialize:before");
+                    deferred.resolve(true);
+                  } else {
+                    console.error("CRM.volunteerApp is not initialized. Backbone/Marionette may not be loaded.");
+                    deferred.reject(ts("Volunteer Backbone app failed to initialize"));
+                  }
+                },
+                function (error) {
+                  console.error("Failed to load backbone resources:", error);
+                  deferred.reject(ts("Failed to load all backbone resources"));
+                }
+              );
+            }, function(error) {
+              console.error("Failed to load Backbone/Marionette core libraries:", error);
+              deferred.reject(ts("Failed to load Backbone/Marionette dependencies"));
+            });
           }, function(error) {
             // Error handler for API call failure
             console.error("Failed to load backbone prerequisites:", error);
