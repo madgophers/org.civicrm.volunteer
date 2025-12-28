@@ -169,7 +169,7 @@
      * This is a service for loading the backbone-based volunteer UIs (and their
      * prerequisite scripts) into angular routes.
      */
-    .factory('volBackbone', function(crmApi, crmProfiles, $q) {
+    .factory('volBackbone', function(crmApi, $q) {
 
       // This was done as a recursive function because the scripts must execute in order.
       function loadNextScript(scripts, callback, fail) {
