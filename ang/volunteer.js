@@ -271,10 +271,6 @@
 
           preReqs.volunteer = crmApi('VolunteerUtil', 'loadbackbone');
 
-          if(!crmProfiles.verify()) {
-            preReqs.profiles = crmProfiles.load();
-          }
-
           $q.all(preReqs).then(function(resources) {
 
             if (CRM.$("#backbone_resources").length < 1) {

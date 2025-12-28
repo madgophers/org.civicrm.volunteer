@@ -136,14 +136,10 @@
               <label>{{:: ts("Profile:") }}</label>
             </div>
             <div class="content">
-              <input ng-if="supporting_data.use_profile_editor" crm-profile-selector="{}"
-                     ng-model="profile.uf_group_id" ng-change="validateProfileSelections()"/>
-
-              <select ng-if="!supporting_data.use_profile_editor" class="big crm-form-select crm-vol-simple-profile-selector"
-                      crm-ui-select="{placeholder: '', allowClear:true}" ng-change="validateProfileSelections()"
-                      ng-options="item as item.title for item in supporting_data.profile_list track by item.id" ng-model="profile.uf_group_id">
-                <option />
-              </select>
+              <input class="big crm-form-entityref crm-vol-profile-selector"
+                     crm-entityref="{entity: 'UFGroup', select: {minimumInputLength: 0, placeholder: ts('Select Profile'), allowClear: true}}"
+                     ng-model="profile.uf_group_id"
+                     ng-change="validateProfileSelections()"/>
             </div>
           </div>
 

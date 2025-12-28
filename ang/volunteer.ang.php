@@ -3,7 +3,6 @@ return [
   'basePages' => ['civicrm/vol'],
   'requires' => [
     'crmApp',
-    'crmProfileUtils',
     'crmUi',
     'crmUtil',
     'ngRoute',

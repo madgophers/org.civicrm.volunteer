@@ -55,9 +55,6 @@
           },
           location_blocks: function(crmApi) {
             return crmApi('VolunteerProject', 'locations', {});
-          },
-          profile_status: function(crmProfiles) {
-            return crmProfiles.load();
           }
         }
       });
@@ -65,7 +62,7 @@
   );
 
 
-  angular.module('volunteer').controller('VolunteerProject', function($scope, $sce, $location, $q, $route, crmApi, crmUiAlert, crmUiHelp, countries, project, profile_status, relationship_data, supporting_data, location_blocks, volBackbone) {
+  angular.module('volunteer').controller('VolunteerProject', function($scope, $sce, $location, $q, $route, crmApi, crmUiAlert, crmUiHelp, countries, project, relationship_data, supporting_data, location_blocks, volBackbone) {
 
     /**
      * We use custom "dirty" logic rather than rely on Angular's native
@@ -170,7 +167,6 @@
     $scope.relationship_types = supporting_data.values.relationship_types;
     $scope.phone_types = supporting_data.values.phone_types;
     $scope.supporting_data = supporting_data.values;
-    $scope.profile_status = profile_status;
     project.is_active = (project.is_active == "1");
     $scope.project = project;
     $scope.profiles = $scope.project.profiles;

@@ -173,15 +173,7 @@ function civicrm_api3_volunteer_util_getsupportingdata($params) {
     $results['roles'] = CRM_Core_OptionGroup::values('volunteer_role', FALSE, FALSE, TRUE);
   }
 
-  $results['use_profile_editor'] = CRM_Volunteer_Permission::check(array("access CiviCRM","profile listings and forms"));
-
   $results['profile_audience_types'] = CRM_Volunteer_BAO_Project::getProjectProfileAudienceTypes();
-
-  if (!$results['use_profile_editor']) {
-    $profiles = civicrm_api3('UFGroup', 'get', array("return" => "title", "sequential" => 1, 'options' => array('limit' => 0)));
-    $results['profile_list'] = $profiles['values'];
-  }
-
 
   return civicrm_api3_create_success($results, "VolunteerUtil", "getsupportingdata", $params);
 }

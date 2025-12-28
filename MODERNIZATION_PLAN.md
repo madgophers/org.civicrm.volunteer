@@ -115,11 +115,63 @@ Extracting UI components from MyShift and adding conflict detection to CiviVolun
 
 ## Implementation Phases (REVISED)
 
-### PHASE 1: Conflict Detection (Week 1) ⭐ HIGH PRIORITY
-**Goal:** Prevent double-booking volunteers in overlapping shifts
+### PHASE 0: Remove Legacy Dependencies 🔴 MISSION CRITICAL
+**Goal:** Remove org.civicrm.angularprofiles dependency (archived 2021, prevents extension installation)
+
+**Status:** ✅ COMPLETED 2025-12-28
+
+**Why This is Critical:**
+- org.civicrm.angularprofiles was archived in 2021 (read-only, no longer maintained)
+- Extension won't install without it (dependency error)
+- It's glue code for Backbone.js + AngularJS integration (legacy architecture debt)
+- CiviCRM already has better patterns (crm-entityref) for entity selection
+- Simplifies architecture and improves maintainability
+
+**What We're Replacing:**
+```html
+<!-- OLD: Backbone widget via angularprofiles (REMOVED) -->
+<input crm-profile-selector="{}" ng-model="profile.uf_group_id"/>
+```
+
+**With:**
+```html
+<!-- NEW: CiviCRM native entityRef pattern (Bootstrap + Select2) -->
+<input crm-entityref="{entity: 'UFGroup', select: {allowClear: true}}"
+       ng-model="profile.uf_group_id"/>
+```
 
 **Tasks:**
-1. Create `/home/user/org.civicrm.volunteer/CRM/Volunteer/BAO/ConflictChecker.php`
+1. ✅ Update `info.xml` - Remove org.civicrm.angularprofiles from `<requires>`
+2. ✅ Update `ang/volunteer.ang.php` - Remove 'crmProfileUtils' from requires
+3. ✅ Update `ang/volunteer.js` - Remove crmProfiles service usage (lines 274-275)
+4. ✅ Update `ang/volunteer/Project.js` - Remove profile_status resolver (lines 59-60)
+5. ✅ Update `ang/volunteer/Project.html` - Replace profile selector widget with entityRef
+6. ✅ Update `api/v3/VolunteerUtil.php` - Always return profile list, remove permission check
+7. ✅ Test profile selection in project creation
+8. ✅ Update docs/MODERNIZATION_PLAN.md
+9. ✅ Commit and push changes
+
+**Benefits:**
+- ✅ No dependency on archived extension
+- ✅ Uses CiviCRM's modern UI patterns (consistent with Campaign/Contact selectors)
+- ✅ Simpler architecture (one less framework dependency)
+- ✅ Extension can now be installed on fresh CiviCRM instances
+- ✅ Better search/autocomplete functionality (native entityRef)
+- ✅ Easier to maintain going forward
+
+**What Functionality Changes:**
+- Lost: Inline "Create/Edit/Copy Profile" buttons in widget (can still manage profiles via CiviCRM admin)
+- Gained: Better search, AJAX loading, consistent UI with rest of CiviCRM
+
+---
+
+### PHASE 1: Conflict Detection ⭐ HIGH PRIORITY
+**Goal:** Prevent double-booking volunteers in overlapping shifts
+
+**Status:** ✅ COMPLETED 2025-12-28
+
+**Tasks:**
+1. ✅ Create `/home/user/org.civicrm.volunteer/CRM/Volunteer/BAO/ConflictChecker.php`
    - Method: `checkConflict($contact_id, $need_id)`
    - Logic: Query existing assignments for contact, check time overlap with new need
    - Return: Boolean + conflict details (what shift they're already assigned to)
