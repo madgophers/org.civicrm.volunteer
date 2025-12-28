@@ -214,16 +214,11 @@
       }
 
       /**
-       * Loads Backbone and Marionette core libraries if not already loaded
+       * Checks if Backbone and Marionette core libraries are available
+       * Note: These should be loaded by CiviCRM core or the Backbone.php page class
        */
       function loadBackboneCore() {
         var deferred = $q.defer();
-
-        // Check if Backbone and Marionette are already loaded
-        if (window.Backbone && CRM.BB && CRM.BB.Marionette) {
-          deferred.resolve(true);
-          return deferred.promise;
-        }
 
         // Ensure jQuery and underscore are available globally
         if (!window.jQuery) {
@@ -233,31 +228,26 @@
           window._ = CRM._;
         }
 
-        var coreScripts = [];
-
-        // Load Backbone if not present
-        if (!window.Backbone) {
-          coreScripts.push(CRM.config.resourceBase + 'bower_components/backbone/backbone.js');
-        }
-
-        // Load Marionette if not present
-        if (!CRM.BB || !CRM.BB.Marionette) {
-          coreScripts.push(CRM.config.resourceBase + 'bower_components/backbone.marionette/lib/backbone.marionette.js');
-        }
-
-        if (coreScripts.length > 0) {
-          loadNextScript(coreScripts, function() {
-            // Initialize CRM.BB namespace if needed
-            if (!CRM.BB) {
-              CRM.BB = { Marionette: window.Marionette };
-            }
-            deferred.resolve(true);
-          }, function(error) {
-            console.error("Failed to load Backbone/Marionette core:", error);
-            deferred.reject("Failed to load Backbone/Marionette dependencies");
-          });
-        } else {
+        // Check if Backbone and Marionette are available
+        if (window.Backbone && window.Marionette) {
+          // Initialize CRM.BB namespace if needed
+          if (!CRM.BB) {
+            CRM.BB = { Marionette: window.Marionette };
+          } else if (!CRM.BB.Marionette) {
+            CRM.BB.Marionette = window.Marionette;
+          }
+          console.log("Backbone and Marionette are available");
           deferred.resolve(true);
+        } else {
+          var missing = [];
+          if (!window.Backbone) missing.push("Backbone.js");
+          if (!window.Marionette) missing.push("Marionette.js");
+
+          console.error("Missing required libraries:", missing.join(", "));
+          console.error("CiviCRM version may not include Backbone/Marionette, or they failed to load.");
+          console.error("The Define/Assign/Search volunteer management features require these libraries.");
+
+          deferred.reject("Missing required libraries: " + missing.join(", ") + ". These features may not be available in CiviCRM 6.9.1+");
         }
 
         return deferred.promise;
