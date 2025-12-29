@@ -345,6 +345,24 @@
     };
 
     /**
+     * Check for duplicate projects with the same title
+     * @returns {Promise} Resolves to true if duplicate exists, false otherwise
+     */
+    checkForDuplicate = function() {
+      // Only check for duplicates when creating a new project (no ID yet)
+      if ($scope.project.id) {
+        return $q.resolve(false);
+      }
+
+      return crmApi('VolunteerProject', 'get', {
+        title: $scope.project.title,
+        sequential: 1
+      }).then(function(result) {
+        return result.count > 0;
+      });
+    };
+
+    /**
      * Helper function which serves as a harness for the API calls which
      * constitute form submission.
      *
@@ -358,28 +376,53 @@
      */
     doSave = function() {
       if ($scope.validate()) {
-        // When the loc block ID is an empty string, it indicates that the
-        // location is blank. Thus, there is no loc block to create/edit.
-        if ($scope.locBlockIsDirty && $scope.project.loc_block_id !== "") {
-          // pass an ID only if we are updating an existing locblock
-          $scope.locBlock.id = $scope.project.loc_block_id === "0" ? null : $scope.project.loc_block_id;
-          return crmApi('VolunteerProject', 'savelocblock', $scope.locBlock).then(
-            // success
-            function (result) {
-              $scope.project.loc_block_id = result.id;
-              return _saveProject();
-            },
-            // failure
-            function(result) {
-              crmUiAlert({text: ts('Failed to save location details. Project could not be saved.'), title: ts('Error'), type: 'error'});
-              console.log('api.VolunteerProject.savelocblock failed with the following message: ' + result.error_message);
-            }
-          );
-        } else {
-          return _saveProject();
-        }
+        // Check for duplicates before saving
+        return checkForDuplicate().then(function(isDuplicate) {
+          if (isDuplicate) {
+            return CRM.confirm({
+              title: ts('Duplicate Project'),
+              message: ts('A project with the title "%1" already exists. Do you want to create another project with the same title?', {1: $scope.project.title})
+            }).then(function() {
+              // User confirmed - proceed with save
+              return performSave();
+            }, function() {
+              // User cancelled - return null to prevent save
+              return null;
+            });
+          } else {
+            // No duplicate - proceed with save
+            return performSave();
+          }
+        });
       } else {
-        return $q.reject(false);
+        return $q.resolve(false);
+      }
+    };
+
+    /**
+     * Perform the actual save operation
+     * @returns {Mixed} Returns project ID on success
+     */
+    performSave = function() {
+      // When the loc block ID is an empty string, it indicates that the
+      // location is blank. Thus, there is no loc block to create/edit.
+      if ($scope.locBlockIsDirty && $scope.project.loc_block_id !== "") {
+        // pass an ID only if we are updating an existing locblock
+        $scope.locBlock.id = $scope.project.loc_block_id === "0" ? null : $scope.project.loc_block_id;
+        return crmApi('VolunteerProject', 'savelocblock', $scope.locBlock).then(
+          // success
+          function (result) {
+            $scope.project.loc_block_id = result.id;
+            return _saveProject();
+          },
+          // failure
+          function(result) {
+            crmUiAlert({text: ts('Failed to save location details. Project could not be saved.'), title: ts('Error'), type: 'error'});
+            console.log('api.VolunteerProject.savelocblock failed with the following message: ' + result.error_message);
+          }
+        );
+      } else {
+        return _saveProject();
       }
     };
 
@@ -412,6 +455,8 @@
     $scope.saveAndDone = function () {
       doSave().then(function (projectId) {
         if (projectId) {
+          // Update the project ID in case this was a new project
+          $scope.project.id = projectId;
           crmUiAlert({text: ts('Changes saved successfully'), title: ts('Saved'), type: 'success'});
           $location.path("/volunteer/manage");
         }
@@ -422,7 +467,11 @@
       doSave().then(function(projectId) {
         if (projectId) {
           crmUiAlert({text: ts('Changes saved successfully'), title: ts('Saved'), type: 'success'});
+          // Update the project ID in case this was a new project
+          $scope.project.id = projectId;
           saveAndNextCallback(projectId);
+          // Ensure Angular processes the location change
+          $scope.$apply();
         }
       });
     };
