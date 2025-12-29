@@ -62,7 +62,7 @@
   );
 
 
-  angular.module('volunteer').controller('VolunteerProject', function($scope, $sce, $location, $q, $route, crmApi, crmUiAlert, crmUiHelp, countries, project, relationship_data, supporting_data, location_blocks, volBackbone) {
+  angular.module('volunteer').controller('VolunteerProject', function($scope, $sce, $location, $q, $route, crmApi, crmUiAlert, crmUiHelp, countries, project, relationship_data, supporting_data, location_blocks) {
 
     /**
      * We use custom "dirty" logic rather than rely on Angular's native
@@ -123,14 +123,7 @@
 
     switch ($scope.formContext) {
       case 'eventTab':
-        volBackbone.load().catch(function(error) {
-          console.error("Failed to preload volunteer Backbone UI:", error);
-          CRM.alert(
-            ts('Failed to load volunteer management interface. Some features may not work. Please check the browser console for details.'),
-            ts('Loading Warning'),
-            'warning'
-          );
-        });
+        // Phase 2 complete: No longer need to preload Backbone UI
         var cancelCallback = function (projectId) {
           CRM.$("body").trigger("volunteerProjectCancel");
         };

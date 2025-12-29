@@ -44,18 +44,6 @@
                 list[index].beneficiaries = beneficiaryIds;
               });
             });
-          },
-          volunteerBackbone: function(volBackbone) {
-            return volBackbone.load().catch(function(error) {
-              console.error("Failed to load volunteer Backbone UI:", error);
-              CRM.alert(
-                ts('Failed to load volunteer management interface. Please check the browser console for details.'),
-                ts('Loading Error'),
-                'error'
-              );
-              // Return a rejected promise to prevent route from loading
-              throw error;
-            });
           }
         }
       });
@@ -63,7 +51,7 @@
   );
 
   // TODO for VOL-276: Remove reference to beneficiaries object, based on deprecated API.
-  angular.module('volunteer').controller('VolunteerProjects', function ($scope, $filter, crmApi, crmStatus, crmUiHelp, projectData, $location, volunteerBackbone, beneficiaries, $window) {
+  angular.module('volunteer').controller('VolunteerProjects', function ($scope, $filter, crmApi, crmStatus, crmUiHelp, projectData, $location, beneficiaries, $window) {
     // The ts() and hs() functions help load strings for this module.
     var ts = $scope.ts = CRM.ts('org.civicrm.volunteer');
     var hs = $scope.hs = crmUiHelp({file: 'CRM/volunteer/Projects'}); // See: templates/CRM/volunteer/Projects.hlp
@@ -183,10 +171,6 @@
       var url = CRM.url("civicrm/volunteer/roster", "project_id=" + this.project.id);
       var settings = {"dialog":{"width":"85%", "height":"80%"}};
       CRM.loadPage(url, settings);
-    };
-
-    $scope.backbonePopup = function(title, tab, projectId) {
-      CRM.volunteerPopup(title, tab, projectId);
     };
 
     $scope.clearCampaign = function() {
