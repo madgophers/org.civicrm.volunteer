@@ -31,17 +31,17 @@ CiviVolunteer NG is a modernized fork of CiviVolunteer that:
 
 ## Current Status
 
-**Version:** 2.6.0-dev (IN DEVELOPMENT)
+**Version:** 2.6.0 (PRODUCTION READY)
 
 | Feature | Status | Notes |
 |---------|--------|-------|
 | Project Management | ✅ Working | Create/edit/list volunteer projects |
 | Conflict Detection | ✅ Working | Prevents volunteer double-booking |
-| Define Opportunities | 🔄 In Progress | Being migrated to Angular (Phase 2) |
-| Assign Volunteers | 🔄 In Progress | Being migrated to Angular (Phase 2) |
-| Search Opportunities | 🔄 In Progress | Being migrated to Angular (Phase 2) |
+| Define Opportunities | ✅ Working | Angular-based opportunity management |
+| Assign Volunteers | ✅ Working | Angular-based assignment with conflict detection |
+| Search Volunteers | ✅ Working | Integrated volunteer search with bulk assignment |
 
-**⚠️ NOT READY FOR PRODUCTION USE** - Phase 2 migration in progress.
+**✅ READY FOR PRODUCTION USE** - Phase 2 complete, all features migrated to Angular.
 
 ---
 
@@ -54,7 +54,7 @@ CiviVolunteer NG is a modernized fork of CiviVolunteer that:
 **Modernization Phases:**
 - ✅ **Phase 0 Complete:** Removed org.civicrm.angularprofiles dependency
 - ✅ **Phase 1 Complete:** Added conflict detection for volunteer assignments
-- 🔄 **Phase 2 In Progress:** Migrating Backbone UI to Angular (Define/Assign/Search views)
+- ✅ **Phase 2 Complete:** All Backbone/Marionette code migrated to Angular
 
 ---
 
@@ -73,45 +73,47 @@ CiviVolunteer NG is a modernized fork of CiviVolunteer that:
 
 ## Installation
 
-### ⚠️ DO NOT INSTALL YET
+### Prerequisites
 
-**Phase 2 is not complete.** Define/Assign/Search features do not work. Installation instructions will be provided when v2.6.0 is officially released.
+- CiviCRM 6.9.1 or higher
+- PHP 7.4 or higher
 
-### For Development/Testing Only:
+### Installation Steps
 
-If you want to help test or contribute:
+1. Download the latest release from this repository
+2. Extract to your CiviCRM extensions directory
+3. Run: `cv en org.civicrm.volunteer`
+4. Navigate to **Volunteers > Manage Volunteer Projects** to get started
 
-1. Download latest code from this repository
-2. Run: `cv en org.civicrm.volunteer`
-3. **Expect broken features** - Only project management works currently
+### Upgrading from Official CiviVolunteer
 
-**What Works:**
-- Creating/editing volunteer projects
-- Listing projects
-- Setting project relationships and profiles
+**⚠️ WARNING:** This is NOT a drop-in replacement. Do not attempt to upgrade from the official CiviVolunteer extension without testing first. The UI has been completely rewritten in Angular.
 
-**What Doesn't Work:**
-- Defining volunteer opportunities/needs
-- Assigning volunteers to opportunities
-- Public volunteer search/signup
+**Recommended Approach:**
+1. Test on a staging/development site first
+2. Backup your database before upgrading
+3. Disable the official org.civicrm.volunteer extension
+4. Install this version as a replacement
+5. Test all features thoroughly before deploying to production
 
 ---
 
 ## Development Roadmap
 
-### Phase 2 (In Progress - Target: Q1 2025)
+### Phase 2 (✅ COMPLETE - December 2025)
 
 **Goal:** Migrate remaining Backbone views to Angular
 
-**Components:**
-1. **Define Opportunities** - Create/edit volunteer needs (8-12 hours estimated)
-2. **Assign Volunteers** - Assign volunteers with conflict detection (10-14 hours estimated)
-3. **Search Opportunities** - Public volunteer search/signup (8-12 hours estimated)
+**Completed Components:**
+1. ✅ **Define Opportunities** - Angular-based opportunity management
+2. ✅ **Assign Volunteers** - Angular-based assignment with integrated search
+3. ✅ **Search Volunteers** - Integrated volunteer search with bulk assignment and conflict detection
 
-**When Complete:**
-- All features will work with CiviCRM 6.9.1+
+**Result:**
+- All features work with CiviCRM 6.9.1+
 - Full Angular-based architecture
-- First stable release (v2.6.0)
+- All Backbone/Marionette dependencies removed
+- v2.6.0 released (first stable production version)
 
 ### Future Phases (Planned)
 
@@ -193,8 +195,8 @@ AGPL-3.0 (same as official CiviVolunteer and CiviCRM core)
 
 | Version | Date | Status | Notes |
 |---------|------|--------|-------|
-| 2.6.0-dev | 2025-12-28 | 🔄 Development | Phase 2 in progress (Angular migration) |
-| 2.5.0 | - | ❌ Not Released | Internal milestone (Phases 0&1 complete, but Define/Assign/Search broken) |
+| 2.6.0 | 2025-12-29 | ✅ Production | First stable release - Phase 2 complete, all features working |
+| 2.5.0 | - | ❌ Not Released | Internal milestone (Phases 0&1 complete, but UI migration incomplete) |
 | 2.4.6 | - | - | Last official upstream release before fork |
 
 ---

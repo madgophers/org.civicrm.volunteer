@@ -8,8 +8,8 @@
     <author>MadGophers (Independent Fork Maintainer)</author>
     <email>info@madgophers.com</email>
   </maintainer>
-  <releaseDate>2025-12-28</releaseDate>
-  <version>2.6.0-dev</version>
+  <releaseDate>2025-12-29</releaseDate>
+  <version>2.6.0</version>
   <compatibility>
     <ver>6.9.1</ver>
   </compatibility>
@@ -26,7 +26,9 @@
     This fork adds:
     - Phase 0 (2025): Removed org.civicrm.angularprofiles dependency
     - Phase 1 (2025): Conflict detection for preventing double-booking
-    - Phase 2 (2025): Angular migration for CiviCRM 6.9.1+ compatibility
+    - Phase 2 (2025): Complete Angular migration - all Backbone/Marionette code removed
+
+    Version 2.6.0 is the first production-ready release with full CiviCRM 6.9.1+ compatibility.
   </comments>
   <civix>
     <namespace>CRM/Volunteer</namespace>
