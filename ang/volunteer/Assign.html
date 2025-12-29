@@ -5,6 +5,142 @@
     <h3>{{:: ts('Assign Volunteers') }} - {{ project.title }}</h3>
   </div>
 
+  <!-- Volunteer Search Modal -->
+  <div ng-if="search.active" class="crm-volunteer-search-overlay">
+    <div class="crm-volunteer-search-dialog">
+      <div class="crm-volunteer-search-header">
+        <h3>{{:: ts('Find Volunteers') }}</h3>
+        <a href="#" ng-click="closeSearch(); $event.preventDefault();" class="crm-close-button" title="{{:: ts('Close') }}">&times;</a>
+      </div>
+
+      <!-- Search Form -->
+      <div class="crm-volunteer-search-form crm-form-block">
+        <div class="crm-section">
+          <div class="label">
+            <label for="search-name">{{:: ts('Name') }}:</label>
+          </div>
+          <div class="content">
+            <input
+              type="text"
+              id="search-name"
+              ng-model="search.criteria.sort_name"
+              placeholder="{{:: ts('Enter name or part of name...') }}"
+              class="crm-form-text big">
+          </div>
+        </div>
+
+        <div class="crm-section">
+          <div class="label">
+            <label for="search-group">{{:: ts('Group') }}:</label>
+          </div>
+          <div class="content">
+            <input
+              type="text"
+              id="search-group"
+              ng-model="search.criteria.group_id"
+              crm-entityref="{entity: 'Group', select: {allowClear: true}}"
+              placeholder="{{:: ts('- any group -') }}"
+              class="crm-form-text big">
+          </div>
+        </div>
+
+        <div class="crm-submit-buttons">
+          <button
+            type="button"
+            ng-click="executeSearch()"
+            class="crm-button crm-button-type-search">
+            <span class="crm-button-icon ui-icon-search"> </span>
+            <span>{{:: ts('Search') }}</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Search Results -->
+      <div ng-if="search.results.length > 0" class="crm-volunteer-search-results">
+        <!-- Pager Top -->
+        <div class="crm-pager" ng-if="search.pager.total > 0">
+          <div class="crm-submit-buttons">
+            <button
+              ng-if="search.pager.start > 1"
+              ng-click="searchPrevious()"
+              class="crm-button crm-button-type-back">
+              <span class="crm-button-icon ui-icon-triangle-1-w"> </span>
+              <span>{{:: ts('Previous') }}</span>
+            </button>
+            <button
+              ng-if="search.pager.total > search.pager.end"
+              ng-click="searchNext()"
+              class="crm-button crm-button-type-next">
+              <span>{{:: ts('Next') }}</span>
+              <span class="crm-button-icon ui-icon-triangle-1-e"> </span>
+            </button>
+            <span>Showing contacts {{ search.pager.start }} - {{ search.pager.end }} of {{ search.pager.total }}</span>
+          </div>
+        </div>
+
+        <!-- Results Table -->
+        <table class="selector row-highlight">
+          <thead>
+            <tr>
+              <th>
+                <input
+                  type="checkbox"
+                  ng-click="getSelectedCount() > 0 ? deselectAll() : selectAll()"
+                  title="{{:: ts('Select All Rows') }}">
+              </th>
+              <th>{{:: ts('Name') }}</th>
+              <th>{{:: ts('City') }}</th>
+              <th>{{:: ts('State') }}</th>
+              <th>{{:: ts('Email') }}</th>
+              <th>{{:: ts('Phone') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr ng-repeat="contact in search.results"
+                ng-class="{'odd': $even, 'even': $odd, 'crm-row-selected': isSelected(contact.id)}">
+              <td>
+                <input
+                  type="checkbox"
+                  ng-model="search.selected[contact.id]"
+                  ng-click="toggleSelection(contact.id)">
+              </td>
+              <td>{{ contact.display_name }}</td>
+              <td>{{ contact.city }}</td>
+              <td>{{ contact.state_province_name }}</td>
+              <td>{{ contact.email }}</td>
+              <td>{{ contact.phone }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- No Results Message -->
+      <div ng-if="search.results.length === 0 && search.pager.total === 0 && (search.criteria.sort_name || search.criteria.group_id)" class="messages status no-popup">
+        <div class="icon inform-icon"></div>
+        {{:: ts('No contacts found matching your search criteria.') }}
+      </div>
+
+      <!-- Dialog Buttons -->
+      <div class="crm-volunteer-search-footer crm-submit-buttons">
+        <button
+          type="button"
+          ng-click="assignSelected()"
+          ng-disabled="getSelectedCount() === 0"
+          class="crm-button crm-button-type-done">
+          <span class="crm-button-icon ui-icon-check"> </span>
+          <span>{{:: ts('Assign') }} ({{ getSelectedCount() }})</span>
+        </button>
+        <button
+          type="button"
+          ng-click="closeSearch()"
+          class="crm-button crm-button-type-cancel">
+          <span class="crm-button-icon ui-icon-close"> </span>
+          <span>{{:: ts('Cancel') }}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Flexible Volunteers Section -->
   <div class="crm-vol-assign-flexible" ng-if="flexibleNeed">
     <h3>{{:: ts('Available Volunteers') }}</h3>
@@ -103,13 +239,23 @@
   <div class="crm-vol-assign-scheduled">
     <div ng-repeat="need in scheduledNeeds" class="crm-vol-need crm-form-block">
 
-      <!-- Need Header -->
+      <!-- Need Header with Search Button -->
       <div class="crm-vol-need-header">
         <h3>
           {{ roles[need.role_id] }}
           (<span ng-if="need.quantity">{{ need.quantity }}</span><span ng-if="!need.quantity">{{:: ts('Any') }}</span>):
           {{ need.display_time }}
         </h3>
+        <div class="crm-vol-need-controls" ng-if="need.hasVacancies">
+          <button
+            type="button"
+            ng-click="openSearch(need)"
+            class="crm-button crm-button-type-search crm-vol-search-btn"
+            title="{{:: ts('Search for volunteers to assign') }}">
+            <span class="crm-button-icon ui-icon-search"> </span>
+            <span>{{:: ts('Search') }}</span>
+          </button>
+        </div>
       </div>
 
       <!-- Assignments Table -->
@@ -231,3 +377,83 @@
   </div>
 
 </div>
+
+<!-- Inline CSS for Search Modal -->
+<style>
+.crm-volunteer-search-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.crm-volunteer-search-dialog {
+  background: white;
+  border-radius: 4px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  max-width: 900px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.crm-volunteer-search-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 10px;
+}
+
+.crm-volunteer-search-header h3 {
+  margin: 0;
+}
+
+.crm-close-button {
+  font-size: 28px;
+  line-height: 1;
+  color: #666;
+  text-decoration: none;
+}
+
+.crm-close-button:hover {
+  color: #000;
+}
+
+.crm-volunteer-search-form {
+  margin-bottom: 20px;
+}
+
+.crm-volunteer-search-results {
+  margin-top: 20px;
+}
+
+.crm-volunteer-search-footer {
+  margin-top: 20px;
+  padding-top: 10px;
+  border-top: 1px solid #ddd;
+}
+
+.crm-vol-need-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.crm-vol-need-controls {
+  margin-left: 20px;
+}
+
+.crm-vol-search-btn {
+  white-space: nowrap;
+}
+</style>

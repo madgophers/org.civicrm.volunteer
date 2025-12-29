@@ -436,6 +436,219 @@
       };
 
       /**
+       * Volunteer search functionality
+       */
+      $scope.search = {
+        active: false,
+        targetNeed: null,
+        criteria: {
+          sort_name: '',
+          group_id: ''
+        },
+        results: [],
+        selected: {},
+        pager: {
+          offset: 0,
+          limit: 25,
+          total: 0,
+          start: 1,
+          end: 0
+        }
+      };
+
+      /**
+       * Open search for a specific need
+       */
+      $scope.openSearch = function(need) {
+        $scope.search.active = true;
+        $scope.search.targetNeed = need;
+        $scope.search.criteria = {sort_name: '', group_id: ''};
+        $scope.search.results = [];
+        $scope.search.selected = {};
+        $scope.search.pager = {offset: 0, limit: 25, total: 0, start: 1, end: 0};
+      };
+
+      /**
+       * Close search
+       */
+      $scope.closeSearch = function() {
+        $scope.search.active = false;
+        $scope.search.targetNeed = null;
+      };
+
+      /**
+       * Execute volunteer search
+       */
+      $scope.executeSearch = function() {
+        var params = {
+          options: {
+            limit: $scope.search.pager.limit,
+            offset: $scope.search.pager.offset
+          },
+          return: ['id', 'display_name', 'sort_name', 'city', 'state_province_name', 'email', 'phone']
+        };
+
+        if ($scope.search.criteria.sort_name) {
+          params.sort_name = {LIKE: '%' + $scope.search.criteria.sort_name + '%'};
+        }
+        if ($scope.search.criteria.group_id) {
+          params.group = $scope.search.criteria.group_id;
+        }
+
+        crmApi('Contact', 'get', params).then(function(result) {
+          $scope.search.results = _.values(result.values);
+          $scope.search.pager.total = result.count;
+          $scope.search.pager.start = $scope.search.pager.offset + 1;
+          $scope.search.pager.end = Math.min($scope.search.pager.offset + $scope.search.pager.limit, $scope.search.pager.total);
+        });
+      };
+
+      /**
+       * Navigate search results
+       */
+      $scope.searchPrevious = function() {
+        $scope.search.pager.offset = Math.max(0, $scope.search.pager.offset - $scope.search.pager.limit);
+        $scope.executeSearch();
+      };
+
+      $scope.searchNext = function() {
+        if ($scope.search.pager.offset + $scope.search.pager.limit < $scope.search.pager.total) {
+          $scope.search.pager.offset += $scope.search.pager.limit;
+          $scope.executeSearch();
+        }
+      };
+
+      /**
+       * Toggle contact selection
+       */
+      $scope.toggleSelection = function(contactId) {
+        if ($scope.search.selected[contactId]) {
+          delete $scope.search.selected[contactId];
+        } else {
+          // Check vacancy limit
+          var maxSelect = $scope.search.targetNeed.vacancyCount || 999;
+          var currentCount = Object.keys($scope.search.selected).length;
+          if (currentCount < maxSelect) {
+            $scope.search.selected[contactId] = true;
+          } else {
+            crmUiAlert({
+              text: ts('Maximum %1 volunteers can be selected (based on available vacancies)', {1: maxSelect}),
+              title: ts('Limit Reached'),
+              type: 'warning'
+            });
+          }
+        }
+      };
+
+      /**
+       * Select all visible contacts
+       */
+      $scope.selectAll = function() {
+        var maxSelect = $scope.search.targetNeed.vacancyCount || 999;
+        var currentCount = Object.keys($scope.search.selected).length;
+        var remaining = maxSelect - currentCount;
+
+        _.each($scope.search.results, function(contact, index) {
+          if (index < remaining && !$scope.search.selected[contact.id]) {
+            $scope.search.selected[contact.id] = true;
+          }
+        });
+      };
+
+      /**
+       * Deselect all contacts
+       */
+      $scope.deselectAll = function() {
+        $scope.search.selected = {};
+      };
+
+      /**
+       * Assign selected volunteers
+       */
+      $scope.assignSelected = function() {
+        var contactIds = Object.keys($scope.search.selected);
+        if (contactIds.length === 0) {
+          return;
+        }
+
+        var need = $scope.search.targetNeed;
+        var statusId = getStatusId('Scheduled');
+        var assignments = [];
+
+        // Check conflicts for each contact
+        var conflictChecks = _.map(contactIds, function(contactId) {
+          return checkConflicts(contactId, need).then(
+            function() {
+              // No conflict - add to assignment list
+              assignments.push({
+                contact_id: contactId,
+                volunteer_need_id: need.id,
+                status_id: statusId,
+                activity_date_time: need.start_time,
+                time_scheduled_minutes: need.duration,
+                volunteer_role_id: need.role_id
+              });
+            },
+            function(conflictError) {
+              // Conflict detected - show warning but continue with others
+              crmUiAlert({
+                text: ts('Skipping contact ID %1: ', {1: contactId}) + (conflictError.message || 'Conflict detected'),
+                title: ts('Scheduling Conflict'),
+                type: 'warning'
+              });
+            }
+          );
+        });
+
+        // After all conflict checks, create assignments
+        $q.all(conflictChecks).then(function() {
+          if (assignments.length === 0) {
+            crmUiAlert({
+              text: ts('No volunteers could be assigned due to conflicts'),
+              title: ts('Assignment Failed'),
+              type: 'error'
+            });
+            return;
+          }
+
+          // Create all assignments
+          var promises = _.map(assignments, function(params) {
+            return crmApi('VolunteerAssignment', 'create', params);
+          });
+
+          crmStatus(
+            {start: ts('Assigning %1 volunteers...', {1: assignments.length}), success: ts('%1 volunteers assigned', {1: assignments.length})},
+            $q.all(promises)
+          ).then(function() {
+            // Refresh need assignments and close search
+            refreshNeedAssignments(need).then(function() {
+              $scope.closeSearch();
+            });
+          }, function(error) {
+            crmUiAlert({
+              text: ts('Some assignments failed: ') + (error.error_message || 'Unknown error'),
+              title: ts('Error'),
+              type: 'error'
+            });
+          });
+        });
+      };
+
+      /**
+       * Get count of selected contacts
+       */
+      $scope.getSelectedCount = function() {
+        return Object.keys($scope.search.selected).length;
+      };
+
+      /**
+       * Check if contact is selected
+       */
+      $scope.isSelected = function(contactId) {
+        return !!$scope.search.selected[contactId];
+      };
+
+      /**
        * Return to project list
        */
       $scope.done = function() {
