@@ -1,0 +1,233 @@
+<div class="crm-volunteer-assign crm-block crm-form-block">
+
+  <!-- Header -->
+  <div class="crm-submit-buttons crm-vol-assign-header">
+    <h3>{{:: ts('Assign Volunteers') }} - {{ project.title }}</h3>
+  </div>
+
+  <!-- Flexible Volunteers Section -->
+  <div class="crm-vol-assign-flexible" ng-if="flexibleNeed">
+    <h3>{{:: ts('Available Volunteers') }}</h3>
+
+    <table class="crm-vol-assignment-table row-highlight">
+      <thead>
+        <tr>
+          <th>{{:: ts('Name') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Assigned Volunteers -->
+        <tr ng-repeat="assignment in flexibleNeed.assignments"
+            class="crm-vol-assignment"
+            ng-class="{'odd': $even, 'even': $odd}">
+          <td class="crm-vol-name">
+            <span class="icon crm-vol-drag"></span>
+            <a target="_blank" href="/civicrm/contact/view?reset=1&cid={{assignment.contact_id}}">
+              {{ assignment.display_name }}
+            </a>
+            <a href="#"
+               ng-if="assignment.details"
+               ng-click="showDetails($event, assignment)"
+               class="icon crm-vol-info"
+               title="{{:: ts('View Details') }}">
+            </a>
+
+            <!-- Action Menu -->
+            <div class="crm-vol-menu">
+              <a href="#"
+                 ng-click="toggleMenu($event, assignment)"
+                 class="crm-vol-menu-button"
+                 title="{{:: ts('Actions') }}">
+                <span></span>
+              </a>
+
+              <div class="crm-vol-menu-items" ng-show="activeMenu === assignment.id">
+                <ul class="crm-vol-menu-list">
+                  <!-- Move To -->
+                  <li>
+                    <a href="#" class="crm-vol-menu-parent">{{:: ts('Move To:') }}</a>
+                    <ul class="crm-vol-menu-move-to">
+                      <li ng-repeat="target in getAvailableTargets(flexibleNeed, assignment)">
+                        <a href="#"
+                           ng-click="moveVolunteer(flexibleNeed, assignment, target.need); activeMenu = null; $event.preventDefault();">
+                          <strong>{{ target.label }}</strong> {{ target.time }}
+                        </a>
+                      </li>
+                    </ul>
+                  </li>
+
+                  <!-- Copy To -->
+                  <li>
+                    <a href="#" class="crm-vol-menu-parent">{{:: ts('Copy To:') }}</a>
+                    <ul class="crm-vol-menu-copy-to">
+                      <li ng-repeat="target in getAvailableTargets(flexibleNeed, assignment)">
+                        <a href="#"
+                           ng-click="copyVolunteer(flexibleNeed, assignment, target.need); activeMenu = null; $event.preventDefault();">
+                          <strong>{{ target.label }}</strong> {{ target.time }}
+                        </a>
+                      </li>
+                    </ul>
+                  </li>
+
+                  <!-- Delete -->
+                  <li>
+                    <a href="#"
+                       ng-click="removeVolunteer(flexibleNeed, assignment); activeMenu = null; $event.preventDefault();"
+                       class="crm-vol-del">
+                      {{:: ts('Delete') }}
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Add Volunteer -->
+    <hr style="margin: 1em 1px;">
+    <div class="crm-vol-add-volunteer">
+      <input
+        type="text"
+        ng-model="flexibleNeed.newVolunteer"
+        ng-change="addVolunteer(flexibleNeed, flexibleNeed.newVolunteer); flexibleNeed.newVolunteer = ''"
+        crm-entityref="{entity: 'Contact', create: true, select: {allowClear: true}}"
+        placeholder="{{:: ts('Add Volunteer...') }}"
+        class="crm-form-text crm-action-menu action-icon-plus"
+        style="width: 100%; max-width: 30em;">
+    </div>
+  </div>
+
+  <!-- Scheduled Needs Section -->
+  <div class="crm-vol-assign-scheduled">
+    <div ng-repeat="need in scheduledNeeds" class="crm-vol-need crm-form-block">
+
+      <!-- Need Header -->
+      <div class="crm-vol-need-header">
+        <h3>
+          {{ roles[need.role_id] }}
+          (<span ng-if="need.quantity">{{ need.quantity }}</span><span ng-if="!need.quantity">{{:: ts('Any') }}</span>):
+          {{ need.display_time }}
+        </h3>
+      </div>
+
+      <!-- Assignments Table -->
+      <table class="crm-vol-assignment-table row-highlight">
+        <thead>
+          <tr>
+            <th>{{:: ts('Name') }}</th>
+            <th>{{:: ts('Email') }}</th>
+            <th>{{:: ts('Phone') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Assigned Volunteers -->
+          <tr ng-repeat="assignment in need.assignments"
+              class="crm-vol-assignment"
+              ng-class="{'odd': $even, 'even': $odd}">
+            <td class="crm-vol-name">
+              <span class="icon crm-vol-drag"></span>
+              <a target="_blank" href="/civicrm/contact/view?reset=1&cid={{assignment.contact_id}}">
+                {{ assignment.display_name }}
+              </a>
+              <a href="#"
+                 ng-if="assignment.details"
+                 ng-click="showDetails($event, assignment)"
+                 class="icon crm-vol-info"
+                 title="{{:: ts('View Details') }}">
+              </a>
+
+              <!-- Action Menu -->
+              <div class="crm-vol-menu">
+                <a href="#"
+                   ng-click="toggleMenu($event, assignment)"
+                   class="crm-vol-menu-button"
+                   title="{{:: ts('Actions') }}">
+                  <span></span>
+                </a>
+
+                <div class="crm-vol-menu-items" ng-show="activeMenu === assignment.id">
+                  <ul class="crm-vol-menu-list">
+                    <!-- Move To -->
+                    <li>
+                      <a href="#" class="crm-vol-menu-parent">{{:: ts('Move To:') }}</a>
+                      <ul class="crm-vol-menu-move-to">
+                        <li ng-repeat="target in getAvailableTargets(need, assignment)">
+                          <a href="#"
+                             ng-click="moveVolunteer(need, assignment, target.need); activeMenu = null; $event.preventDefault();">
+                            <strong>{{ target.label }}</strong> {{ target.time }}
+                          </a>
+                        </li>
+                      </ul>
+                    </li>
+
+                    <!-- Copy To -->
+                    <li>
+                      <a href="#" class="crm-vol-menu-parent">{{:: ts('Copy To:') }}</a>
+                      <ul class="crm-vol-menu-copy-to">
+                        <li ng-repeat="target in getAvailableTargets(need, assignment)">
+                          <a href="#"
+                             ng-click="copyVolunteer(need, assignment, target.need); activeMenu = null; $event.preventDefault();">
+                            <strong>{{ target.label }}</strong> {{ target.time }}
+                          </a>
+                        </li>
+                      </ul>
+                    </li>
+
+                    <!-- Delete -->
+                    <li>
+                      <a href="#"
+                         ng-click="removeVolunteer(need, assignment); activeMenu = null; $event.preventDefault();"
+                         class="crm-vol-del">
+                        {{:: ts('Delete') }}
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </td>
+            <td>{{ assignment.email }}</td>
+            <td>{{ assignment.phone }}</td>
+          </tr>
+
+          <!-- Vacancy Row -->
+          <tr ng-if="need.hasVacancies && need.assignedCount > 0" class="crm-vol-vacancy">
+            <td colspan="3">
+              <span ng-if="need.assignedCount > 0">
+                {{ need.vacancyCount }} {{:: ts('More Needed') }}
+              </span>
+              <span ng-if="need.assignedCount === 0">
+                {{ need.vacancyCount }} {{:: ts('Needed') }}
+              </span>
+            </td>
+          </tr>
+
+          <!-- Empty Placeholder -->
+          <tr ng-if="!need.quantity && need.assignments.length === 0" class="crm-vol-placeholder">
+            <td colspan="3">{{:: ts('None') }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+    </div>
+
+    <!-- No Scheduled Needs Message -->
+    <div ng-show="scheduledNeeds.length === 0" class="messages status no-popup">
+      <div class="icon inform-icon"></div>
+      {{:: ts('No scheduled volunteer opportunities defined. Please define opportunities first.') }}
+    </div>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="crm-submit-buttons crm-vol-assign-footer">
+    <button
+      type="button"
+      ng-click="done()"
+      class="crm-button crm-button-type-done crm-button_qf_Volunteer_done">
+      <span class="crm-button-icon ui-icon-circle-check"> </span>
+      <span>{{:: ts('Done') }}</span>
+    </button>
+  </div>
+
+</div>
