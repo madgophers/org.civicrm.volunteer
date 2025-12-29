@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
 <extension key="org.civicrm.volunteer" type="module">
   <file>volunteer</file>
-  <name>CiviVolunteer NG (Next Generation by MadGophers)</name>
+  <name>CiviVolunteer NG (Next Generation by Madgophers)</name>
   <description>INDEPENDENT FORK of CiviVolunteer with modern Angular architecture for CiviCRM 6.9+. Features conflict detection, removed legacy Backbone/Marionette dependencies, and simplified profile handling. NOT affiliated with official CiviVolunteer project. Use at your own risk.</description>
   <license>AGPL-3.0</license>
   <maintainer>
-    <author>MadGophers (Independent Fork Maintainer)</author>
+    <author>Madgophers (Independent Fork Maintainer)</author>
     <email>info@madgophers.com</email>
   </maintainer>
   <releaseDate>2025-12-29</releaseDate>
@@ -14,7 +14,7 @@
     <ver>6.9.1</ver>
   </compatibility>
   <comments>
-    INDEPENDENT FORK maintained by MadGophers for CiviCRM 6.9.1+ compatibility.
+    INDEPENDENT FORK maintained by Madgophers for CiviCRM 6.9.1+ compatibility.
 
     Original CiviVolunteer developed by Ginkgo Street Labs and CiviCRM, LLC with contributions from the community.
 
@@ -28,7 +28,7 @@
     - Phase 1 (2025): Conflict detection for preventing double-booking
     - Phase 2 (2025): Complete Angular migration - all Backbone/Marionette code removed
 
-    Version 2.6.0 is the first production-ready release with full CiviCRM 6.9.1+ compatibility.
+    Version 2.6.0 is a Development release for CiviCRM - Stand Alone - 6.9.1+ compatibility.
   </comments>
   <civix>
     <namespace>CRM/Volunteer</namespace>
