@@ -14,7 +14,19 @@
     <ver>6.9.1</ver>
   </compatibility>
   <comments>
-    Modernized version with Phase 0 (removed org.civicrm.angularprofiles dependency) and Phase 1 (conflict detection for preventing double-booking). Original development by Ginkgo Street Labs and CiviCRM, LLC with contributions from the community. Special thanks to Friends of Georgia State Parks &amp; Historic Sites for funding the initial release, and to The Manhattan Neighborhood Network for funding the 1.4 release.
+    INDEPENDENT FORK maintained by MadGophers for CiviCRM 6.9.1+ compatibility.
+
+    Original CiviVolunteer developed by Ginkgo Street Labs and CiviCRM, LLC with contributions from the community.
+
+    Special thanks to:
+    - Friends of Georgia State Parks &amp; Historic Sites (funding initial release)
+    - The Manhattan Neighborhood Network (funding 1.4 release)
+    - All contributors to the original CiviVolunteer project
+
+    This fork adds:
+    - Phase 0 (2025): Removed org.civicrm.angularprofiles dependency
+    - Phase 1 (2025): Conflict detection for preventing double-booking
+    - Phase 2 (2025): Angular migration for CiviCRM 6.9.1+ compatibility
   </comments>
   <civix>
     <namespace>CRM/Volunteer</namespace>
