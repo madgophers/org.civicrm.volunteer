@@ -1,15 +1,15 @@
 <?xml version="1.0"?>
 <extension key="org.civicrm.volunteer" type="module">
   <file>volunteer</file>
-  <name>CiviVolunteer (Modernized)</name>
-  <description>Modernized volunteer management with conflict detection and simplified architecture. Provides tools for signing up, managing, and tracking volunteers without legacy dependencies.</description>
+  <name>CiviVolunteer NG (Next Generation by MadGophers)</name>
+  <description>INDEPENDENT FORK of CiviVolunteer with modern Angular architecture for CiviCRM 6.9+. Features conflict detection, removed legacy Backbone/Marionette dependencies, and simplified profile handling. NOT affiliated with official CiviVolunteer project. Use at your own risk.</description>
   <license>AGPL-3.0</license>
   <maintainer>
-    <author>madgophers (Modernization)</author>
+    <author>MadGophers (Independent Fork Maintainer)</author>
     <email>info@madgophers.com</email>
   </maintainer>
   <releaseDate>2025-12-28</releaseDate>
-  <version>2.5.0</version>
+  <version>2.6.0-dev</version>
   <compatibility>
     <ver>6.9.1</ver>
   </compatibility>
