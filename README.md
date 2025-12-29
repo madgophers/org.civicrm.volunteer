@@ -1,6 +1,6 @@
 # ⚠️ CiviVolunteer NG (Next Generation) - INDEPENDENT FORK
 
-**This is an INDEPENDENT FORK maintained by MadGophers, NOT the official CiviVolunteer project.**
+**This is an INDEPENDENT FORK maintained by Madgophers, NOT the official CiviVolunteer project.**
 
 **Official Project:** [civicrm/org.civicrm.volunteer](https://github.com/civicrm/org.civicrm.volunteer)
 **This Fork:** [madgophers/org.civicrm.volunteer](https://github.com/madgophers/org.civicrm.volunteer)
