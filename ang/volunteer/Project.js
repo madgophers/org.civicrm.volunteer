@@ -145,17 +145,8 @@
           $location.path("/volunteer/manage");
         };
         var saveAndNextCallback = function (projectId) {
-          volBackbone.load().then(function () {
-            CRM.volunteerPopup(ts('Define Volunteer Opportunities'), 'Define', projectId);
-            $location.path("/volunteer/manage");
-          }).catch(function(error) {
-            console.error("Failed to load volunteer Backbone UI for Define popup:", error);
-            CRM.alert(
-              ts('Failed to load the Define Opportunities interface. Please check the browser console for details.'),
-              ts('Loading Error'),
-              'error'
-            );
-          });
+          // Navigate to Define Opportunities Angular view
+          $location.path("/volunteer/project/" + projectId + "/needs");
         };
         $scope.saveAndNextLabel = ts('Continue');
     }

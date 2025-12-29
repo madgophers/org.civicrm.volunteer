@@ -1,0 +1,222 @@
+<div class="crm-volunteer-needs crm-block crm-form-block">
+
+  <!-- Header -->
+  <div class="crm-submit-buttons crm-vol-needs-header">
+    <h3>{{:: ts('Define Volunteer Opportunities') }} - {{ project.title }}</h3>
+  </div>
+
+  <!-- Help Text -->
+  <div class="help">
+    <p>{{:: ts('Use this form to specify the number of volunteers needed for each role and time slot. If no opportunities are specified, volunteers will be considered to be generally available.') }}</p>
+    <span crm-ui-help="hs({id: 'volunteer-define', file: 'CRM/Volunteer/Page/Backbone/Define'})"></span>
+  </div>
+
+  <!-- Scheduled Opportunities Table -->
+  <div class="crm-vol-scheduled-needs">
+    <table class="crm-vol-needs-table" ng-show="scheduledNeeds.length > 0">
+      <thead>
+        <tr>
+          <th>{{:: ts('Role') }}</th>
+          <th>{{:: ts('Volunteers Needed') }}</th>
+          <th>{{:: ts('Time') }}</th>
+          <th>{{:: ts('Public?') }}</th>
+          <th>{{:: ts('Enabled?') }}</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr ng-repeat="need in scheduledNeeds" ng-class="{'odd': $even, 'even': $odd}">
+          <!-- Role -->
+          <td>
+            <select
+              ng-model="need.role_id"
+              ng-change="saveNeed(need)"
+              ng-options="roleId as roleName for (roleId, roleName) in roles"
+              class="crm-form-select">
+              <option value="">{{:: ts('- select -') }}</option>
+            </select>
+          </td>
+
+          <!-- Quantity -->
+          <td>
+            <input
+              type="number"
+              ng-model="need.quantity"
+              ng-change="saveNeed(need)"
+              class="crm-form-text"
+              size="4"
+              min="1">
+          </td>
+
+          <!-- Time Components -->
+          <td class="crm-vol-time-components">
+            <!-- Schedule Type -->
+            <label>
+              {{:: ts('Schedule Type:') }}
+              <select
+                ng-model="need.schedule_type"
+                ng-change="onScheduleTypeChange(need); saveNeed(need)"
+                class="crm-form-select">
+                <option value="">{{:: ts('- select one -') }}</option>
+                <option value="shift">{{:: ts('Set shift') }}</option>
+                <option value="flexible">{{:: ts('Flexible timeframe') }}</option>
+                <option value="open">{{:: ts('Open-Ended') }}</option>
+              </select>
+              <span crm-ui-help="hs({id: 'volunteer-define-schedule_type', file: 'CRM/Volunteer/Page/Backbone/Define'})"></span>
+            </label>
+
+            <!-- Time Fields -->
+            <table class="crm-vol-time-fields" ng-show="need.schedule_type">
+              <thead>
+                <tr>
+                  <th ng-show="need.schedule_type === 'shift' || need.schedule_type === 'flexible'">
+                    {{:: ts('Start Date/Time') }}
+                  </th>
+                  <th ng-show="need.schedule_type === 'flexible'">
+                    {{:: ts('End Date/Time') }}
+                  </th>
+                  <th ng-show="need.schedule_type === 'shift'">
+                    {{:: ts('Minutes') }}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <!-- Start Date/Time (shift and flexible) -->
+                  <td ng-show="need.schedule_type === 'shift' || need.schedule_type === 'flexible'">
+                    <input
+                      type="text"
+                      ng-model="need.display_start_date"
+                      ng-change="saveNeed(need)"
+                      crm-ui-datepicker="{}"
+                      placeholder="mm/dd/yyyy"
+                      class="crm-form-text"
+                      size="12">
+                    <input
+                      type="text"
+                      ng-model="need.display_start_time"
+                      ng-change="saveNeed(need)"
+                      placeholder="hh:mm AM/PM"
+                      class="crm-form-text"
+                      size="10">
+                  </td>
+
+                  <!-- End Date/Time (flexible only) -->
+                  <td ng-show="need.schedule_type === 'flexible'">
+                    <input
+                      type="text"
+                      ng-model="need.display_end_date"
+                      ng-change="saveNeed(need)"
+                      crm-ui-datepicker="{}"
+                      placeholder="mm/dd/yyyy"
+                      class="crm-form-text"
+                      size="12">
+                    <input
+                      type="text"
+                      ng-model="need.display_end_time"
+                      ng-change="saveNeed(need)"
+                      placeholder="hh:mm AM/PM"
+                      class="crm-form-text"
+                      size="10">
+                  </td>
+
+                  <!-- Duration (shift only) -->
+                  <td ng-show="need.schedule_type === 'shift'">
+                    <input
+                      type="number"
+                      ng-model="need.duration"
+                      ng-change="saveNeed(need)"
+                      class="crm-form-text"
+                      size="6"
+                      min="1">
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </td>
+
+          <!-- Public Visibility -->
+          <td>
+            <input
+              type="checkbox"
+              ng-model="need.visibility_id"
+              ng-true-value="{{visibilityOptions.public}}"
+              ng-false-value="{{visibilityOptions.admin}}"
+              ng-change="saveNeed(need)">
+          </td>
+
+          <!-- Is Active -->
+          <td>
+            <input
+              type="checkbox"
+              ng-model="need.is_active"
+              ng-true-value="'1'"
+              ng-false-value="'0'"
+              ng-change="saveNeed(need)">
+          </td>
+
+          <!-- Delete -->
+          <td>
+            <a
+              href="#"
+              ng-click="deleteNeed(need, $index); $event.preventDefault();"
+              class="crm-vol-del action-item crm-hover-button small-popup"
+              title="{{:: ts('Delete') }}">
+              {{:: ts('Delete') }}
+            </a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Add New Opportunity -->
+    <div class="crm-vol-add-need">
+      <label>
+        {{:: ts('New Opportunity:') }}
+        <select
+          ng-model="newNeedRole"
+          ng-change="addNeed(newNeedRole)"
+          ng-options="roleId as roleName for (roleId, roleName) in roles"
+          class="crm-form-select crm-action-menu action-icon-plus">
+          <option value="">{{:: ts('- select role -') }}</option>
+        </select>
+      </label>
+    </div>
+
+    <!-- No Opportunities Message -->
+    <div ng-show="scheduledNeeds.length === 0" class="messages status no-popup">
+      <div class="icon inform-icon"></div>
+      {{:: ts('No scheduled opportunities defined yet. Use the dropdown above to add your first opportunity.') }}
+    </div>
+  </div>
+
+  <!-- Flexible Need Option -->
+  <div class="crm-vol-flexible-need">
+    <hr>
+    <h4>{{:: ts('Flexible Sign-up Option') }}</h4>
+    <label>
+      <input
+        type="checkbox"
+        ng-model="flexibleNeed.is_active"
+        ng-true-value="'1'"
+        ng-false-value="'0'"
+        ng-change="saveFlexibleNeed()">
+      {{:: ts('Allow volunteers to sign up without specifying a shift.') }}
+    </label>
+    <div class="description">
+      {{:: ts('When enabled, volunteers can express general interest without committing to a specific time slot.') }}
+    </div>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="crm-submit-buttons crm-vol-needs-footer">
+    <button
+      type="button"
+      ng-click="done()"
+      class="crm-button crm-button-type-done crm-button_qf_Volunteer_done">
+      <span class="crm-button-icon ui-icon-circle-check"> </span>
+      <span>{{:: ts('Done') }}</span>
+    </button>
+  </div>
+
+</div>
