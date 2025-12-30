@@ -42,10 +42,9 @@
   });
 
   angular.module('volunteer').controller('VolunteerNeeds',
-    function($scope, $location, $route, $q, crmApi, crmUiAlert, crmUiHelp, project, needs, roles, visibilityOptions) {
+    function($scope, $location, $route, $q, crmApi, crmUiAlert, project, needs, roles, visibilityOptions) {
 
       var ts = $scope.ts = CRM.ts('org.civicrm.volunteer');
-      var hs = $scope.hs = crmUiHelp({file: 'CRM/Volunteer/Page/Backbone/Define'});
 
       $scope.project = project;
       $scope.roles = roles;
