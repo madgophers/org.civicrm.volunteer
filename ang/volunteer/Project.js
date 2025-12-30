@@ -466,12 +466,11 @@
     $scope.saveAndNext = function() {
       doSave().then(function(projectId) {
         if (projectId) {
-          crmUiAlert({text: ts('Changes saved successfully'), title: ts('Saved'), type: 'success'});
           // Update the project ID in case this was a new project
           $scope.project.id = projectId;
+          crmUiAlert({text: ts('Changes saved successfully'), title: ts('Saved'), type: 'success'});
+          // Navigate to next step
           saveAndNextCallback(projectId);
-          // Ensure Angular processes the location change
-          $scope.$apply();
         }
       });
     };

@@ -169,3 +169,40 @@
     // It's no longer needed as all UIs have been migrated to Angular
 
 })(angular, CRM.$, CRM._);
+
+/**
+ * CiviVolunteer NG - Angular Navigation Helper
+ *
+ * Replaces the old CRM.volunteerPopup function that was part of the
+ * Backbone/Marionette app. This version uses Angular routing instead.
+ */
+(function($) {
+  'use strict';
+
+  /**
+   * Navigate to Angular volunteer management pages
+   *
+   * @param {string} title - Page title (not used in Angular version)
+   * @param {string} tab - Which view to open: 'Define' or 'Assign'
+   * @param {number} projectId - The volunteer project ID
+   */
+  CRM.volunteerPopup = function(title, tab, projectId) {
+    var hash;
+
+    switch(tab) {
+      case 'Define':
+        hash = '#/volunteer/project/' + projectId + '/needs';
+        break;
+      case 'Assign':
+        hash = '#/volunteer/project/' + projectId + '/assign';
+        break;
+      default:
+        console.error('Unknown volunteer tab:', tab);
+        return;
+    }
+
+    // Navigate using hash routing
+    window.location.hash = hash;
+  };
+
+})(CRM.$);
