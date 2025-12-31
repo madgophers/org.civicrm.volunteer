@@ -62,7 +62,7 @@
   );
 
 
-  angular.module('volunteer').controller('VolunteerProject', function($scope, $sce, $location, $q, $route, crmApi, crmUiAlert, crmUiHelp, countries, project, relationship_data, supporting_data, location_blocks) {
+  angular.module('volunteer').controller('VolunteerProject', function($scope, $sce, $location, $q, $route, $timeout, crmApi, crmUiAlert, crmUiHelp, countries, project, relationship_data, supporting_data, location_blocks) {
 
     /**
      * We use custom "dirty" logic rather than rely on Angular's native
@@ -135,11 +135,16 @@
 
       default:
         var cancelCallback = function (projectId) {
-          $location.path("/volunteer/manage");
+          $timeout(function() {
+            $location.path("/volunteer/manage");
+          });
         };
         var saveAndNextCallback = function (projectId) {
           // Navigate to Define Opportunities Angular view
-          $location.path("/volunteer/project/" + projectId + "/needs");
+          // Use $timeout to ensure Angular digest cycle runs
+          $timeout(function() {
+            $location.path("/volunteer/project/" + projectId + "/needs");
+          });
         };
         $scope.saveAndNextLabel = ts('Continue');
     }
@@ -458,7 +463,9 @@
           // Update the project ID in case this was a new project
           $scope.project.id = projectId;
           crmUiAlert({text: ts('Changes saved successfully'), title: ts('Saved'), type: 'success'});
-          $location.path("/volunteer/manage");
+          $timeout(function() {
+            $location.path("/volunteer/manage");
+          });
         }
       });
     };
