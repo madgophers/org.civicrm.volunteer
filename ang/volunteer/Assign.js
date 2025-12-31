@@ -197,7 +197,7 @@
               need.assignments.splice(index, 1);
             }
             updateVacancyCount(need);
-            $scope.$apply();
+            // No need for $scope.$apply() - crmApi returns Angular promises that auto-digest
           }, function(error) {
             crmUiAlert({
               text: ts('Failed to remove volunteer: ') + error.error_message,
@@ -347,7 +347,7 @@
         }).then(function(result) {
           need.assignments = _.values(result.values);
           updateVacancyCount(need);
-          $scope.$apply();
+          // No need for $scope.$apply() - crmApi returns Angular promises that auto-digest
           return need;
         });
       }

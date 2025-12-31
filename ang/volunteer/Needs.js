@@ -245,7 +245,7 @@
           crmApi('VolunteerNeed', 'delete', {id: need.id}).then(
             function() {
               $scope.scheduledNeeds.splice(index, 1);
-              $scope.$apply();
+              // No need for $scope.$apply() - crmApi returns Angular promises that auto-digest
               crmUiAlert({text: ts('Opportunity deleted'), title: ts('Deleted'), type: 'success'});
             },
             function(error) {

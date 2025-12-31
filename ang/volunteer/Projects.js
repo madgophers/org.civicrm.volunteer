@@ -51,7 +51,7 @@
   );
 
   // TODO for VOL-276: Remove reference to beneficiaries object, based on deprecated API.
-  angular.module('volunteer').controller('VolunteerProjects', function ($scope, $filter, $q, $timeout, crmApi, crmStatus, crmUiHelp, projectData, $location, beneficiaries, $window) {
+  angular.module('volunteer').controller('VolunteerProjects', function ($scope, $filter, $q, $timeout, $route, crmApi, crmStatus, crmUiHelp, crmDialog, crmUrl, projectData, $location, beneficiaries, $window) {
     // The ts() and hs() functions help load strings for this module.
     var ts = $scope.ts = CRM.ts('org.civicrm.volunteer');
     var hs = $scope.hs = crmUiHelp({file: 'CRM/volunteer/Projects'}); // See: templates/CRM/volunteer/Projects.hlp
@@ -162,20 +162,20 @@
     };
 
     $scope.showLogHours = function() {
-      var url = CRM.url("civicrm/volunteer/loghours", "reset=1&action=add&vid=" + this.project.id);
+      var url = crmUrl("civicrm/volunteer/loghours", "reset=1&action=add&vid=" + this.project.id);
       var settings = {"dialog":{"width":"85%", "height":"80%"}};
 
-      CRM.loadForm(url, settings).on('crmFormSuccess', function(event, data) {
-        // Refresh project data after hours are logged
-        $scope.$apply(function() {
-          // Reload the route to refresh all project data
-          $route.reload();
-        });
+      // Use crmDialog service wrapper - automatically handles $timeout and refresh
+      crmDialog.loadForm(url, settings).then(function(data) {
+        // Form submitted successfully - reload route to refresh data
+        $route.reload();
+      }).catch(function(error) {
+        // Form closed or error occurred - no action needed
       });
     };
 
     $scope.showRoster = function() {
-      var url = CRM.url("civicrm/volunteer/roster", "project_id=" + this.project.id);
+      var url = crmUrl("civicrm/volunteer/roster", "project_id=" + this.project.id);
       var settings = {
         "dialog": {
           "width": "85%",
@@ -183,12 +183,10 @@
         }
       };
 
-      CRM.loadPage(url, settings).on('dialogclose', function(event) {
-        // Refresh project list when roster dialog closes
-        // User might have made changes via the roster
-        $scope.$apply(function() {
-          $route.reload();
-        });
+      // Use crmDialog service wrapper - automatically handles $timeout and refresh
+      crmDialog.loadPage(url, settings).then(function() {
+        // Dialog closed - reload route to refresh data
+        $route.reload();
       });
     };
 
@@ -284,7 +282,7 @@
       var filter = $filter('filter');
       var projectsInView = filter($scope.projects, $scope.searchParams);
 
-      $.each(projectsInView, function(index, project) {
+      _.each(projectsInView, function(project) {
         all = (all && project.selected);
       });
       $scope.allSelected = all;
@@ -301,7 +299,7 @@
       var projectsInView = filter($scope.projects, $scope.searchParams);
       var toggle = $scope.allSelected;
 
-      $.each(projectsInView, function(index, project) {
+      _.each(projectsInView, function(project) {
         project.selected = toggle;
       });
     };
@@ -313,7 +311,7 @@
      */
     $scope.$watch('searchParams', function() {
       $scope.allSelected = false;
-      $.each($scope.projects, function(index, project) {
+      _.each($scope.projects, function(project) {
         project.selected = false;
       });
     }, true);

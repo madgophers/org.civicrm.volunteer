@@ -44,7 +44,7 @@
             };
             return crmApi('VolunteerProjectContact', 'get', params).then(function(result) {
               var relationships = {};
-              $(result.values).each(function (index, vpc) {
+              _.each(result.values, function (vpc) {
                 if (!relationships.hasOwnProperty(vpc.relationship_type_id)) {
                   relationships[vpc.relationship_type_id] = [];
                 }
@@ -163,7 +163,7 @@
     if (!CRM.checkPerm('edit volunteer registration profiles')) {
       delete project.profiles;
     } else {
-      $.each(project.profiles, function (key, data) {
+      _.each(project.profiles, function (data) {
         if(data.module_data && typeof(data.module_data) === "string") {
           data.module_data = JSON.parse(data.module_data);
         }
@@ -257,7 +257,7 @@
 
     var getMaxProfileWeight = function() {
       var weights = [0];
-      $.each($scope.profiles, function (index, data) {
+      _.each($scope.profiles, function (data) {
         weights.push(parseInt(data.weight));
       });
       return _.max(weights);
@@ -282,7 +282,7 @@
         return false;
       }
 
-      $.each($scope.profiles, function (index, data) {
+      _.each($scope.profiles, function (data) {
         if(!data.uf_group_id) {
           CRM.alert(ts("Please select at least one profile, and remove empty selections"), "Required", 'error');
           valid = false;

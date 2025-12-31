@@ -10,6 +10,7 @@ return [
   ],
   'js' => [
     'ang/volunteer.js',
+    'ang/volunteer/crmWrappers.js',
     'ang/volunteer/*.js',
     'ang/volunteer/*/*.js'
   ],
