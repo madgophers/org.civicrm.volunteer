@@ -39,7 +39,7 @@
   });
 
   angular.module('volunteer').controller('VolunteerAssign',
-    function($scope, $location, $route, $q, $timeout, crmApi, crmUiAlert, crmStatus, project, needs, roles, volunteerStatus) {
+    function($scope, $route, $q, crmApi, crmUiAlert, crmStatus, project, needs, roles, volunteerStatus) {
 
       var ts = $scope.ts = CRM.ts('org.civicrm.volunteer');
 
@@ -659,9 +659,8 @@
        * Return to project list
        */
       $scope.done = function() {
-        $timeout(function() {
-          $location.path('/volunteer/manage');
-        });
+        // Use window.location.hash to force route reload
+        window.location.hash = '#/volunteer/manage';
       };
 
     }

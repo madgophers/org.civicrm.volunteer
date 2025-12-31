@@ -62,7 +62,7 @@
   );
 
 
-  angular.module('volunteer').controller('VolunteerProject', function($scope, $sce, $location, $q, $route, $timeout, crmApi, crmUiAlert, crmUiHelp, countries, project, relationship_data, supporting_data, location_blocks) {
+  angular.module('volunteer').controller('VolunteerProject', function($scope, $sce, $q, $route, $timeout, crmApi, crmUiAlert, crmUiHelp, countries, project, relationship_data, supporting_data, location_blocks) {
 
     /**
      * We use custom "dirty" logic rather than rely on Angular's native
@@ -139,16 +139,13 @@
 
       default:
         var cancelCallback = function (projectId) {
-          $timeout(function() {
-            $location.path("/volunteer/manage");
-          });
+          // Use window.location.hash to force route reload
+          window.location.hash = "#/volunteer/manage";
         };
         var saveAndNextCallback = function (projectId) {
           // Navigate to Define Opportunities Angular view
-          // Use $timeout to ensure Angular digest cycle runs
-          $timeout(function() {
-            $location.path("/volunteer/project/" + projectId + "/needs");
-          });
+          // Use window.location.hash to force route reload (same pattern as CRM.volunteerPopup)
+          window.location.hash = "#/volunteer/project/" + projectId + "/needs";
         };
         $scope.saveAndNextLabel = ts('Continue');
     }
@@ -469,9 +466,8 @@
           // Update the project ID in case this was a new project
           $scope.project.id = projectId;
           crmUiAlert({text: ts('Changes saved successfully'), title: ts('Saved'), type: 'success'});
-          $timeout(function() {
-            $location.path("/volunteer/manage");
-          });
+          // Use window.location.hash to force route reload
+          window.location.hash = "#/volunteer/manage";
         }
       });
     };
