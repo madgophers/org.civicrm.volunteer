@@ -164,13 +164,32 @@
     $scope.showLogHours = function() {
       var url = CRM.url("civicrm/volunteer/loghours", "reset=1&action=add&vid=" + this.project.id);
       var settings = {"dialog":{"width":"85%", "height":"80%"}};
-      CRM.loadForm(url, settings);
+
+      CRM.loadForm(url, settings).on('crmFormSuccess', function(event, data) {
+        // Refresh project data after hours are logged
+        $scope.$apply(function() {
+          // Reload the route to refresh all project data
+          $route.reload();
+        });
+      });
     };
 
     $scope.showRoster = function() {
       var url = CRM.url("civicrm/volunteer/roster", "project_id=" + this.project.id);
-      var settings = {"dialog":{"width":"85%", "height":"80%"}};
-      CRM.loadPage(url, settings);
+      var settings = {
+        "dialog": {
+          "width": "85%",
+          "height": "80%"
+        }
+      };
+
+      CRM.loadPage(url, settings).on('dialogclose', function(event) {
+        // Refresh project list when roster dialog closes
+        // User might have made changes via the roster
+        $scope.$apply(function() {
+          $route.reload();
+        });
+      });
     };
 
     $scope.clearCampaign = function() {
