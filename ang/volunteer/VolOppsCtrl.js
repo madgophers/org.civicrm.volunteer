@@ -221,7 +221,7 @@
       var cartDelay = 200;
 
       var cartTop = $("div.crm-vol-opp-cart").offset().top;
-      $(window).on("scroll", function (e) {
+      var scrollHandler = function(e) {
         var cartShouldFloat = ($(window).scrollTop() > cartTop);
         if ($scope.cartIsFloating !== cartShouldFloat) {
           $(".crm-vol-opp-cart").fadeOut(cartDelay);
@@ -230,6 +230,12 @@
             $(".crm-vol-opp-cart").fadeIn(cartDelay);
           }, cartDelay);
         }
+      };
+      $(window).on("scroll", scrollHandler);
+
+      // Clean up event listener when controller is destroyed
+      $scope.$on('$destroy', function() {
+        $(window).off("scroll", scrollHandler);
       });
     }
   });

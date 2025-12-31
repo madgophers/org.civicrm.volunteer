@@ -51,7 +51,7 @@
   );
 
   // TODO for VOL-276: Remove reference to beneficiaries object, based on deprecated API.
-  angular.module('volunteer').controller('VolunteerProjects', function ($scope, $filter, crmApi, crmStatus, crmUiHelp, projectData, $location, beneficiaries, $window) {
+  angular.module('volunteer').controller('VolunteerProjects', function ($scope, $filter, $q, $timeout, crmApi, crmStatus, crmUiHelp, projectData, $location, beneficiaries, $window) {
     // The ts() and hs() functions help load strings for this module.
     var ts = $scope.ts = CRM.ts('org.civicrm.volunteer');
     var hs = $scope.hs = crmUiHelp({file: 'CRM/volunteer/Projects'}); // See: templates/CRM/volunteer/Projects.hlp
@@ -185,13 +185,18 @@
         run: function() {
           CRM.confirm({message: ts("Are you sure you want to Enable the selected Projects?")})
             .on('crmConfirm:yes', function() {
-              $.each($scope.projects, function (index, project) {
-                if (project.selected) {
-                  project.is_active = 1;
-                  crmApi("VolunteerProject", "create", {id: project.id, is_active: project.is_active}, true);
-                }
+              $scope.$apply(function() {
+                var promises = [];
+                _.each($scope.projects, function (project) {
+                  if (project.selected) {
+                    project.is_active = 1;
+                    promises.push(crmApi("VolunteerProject", "create", {id: project.id, is_active: project.is_active}));
+                  }
+                });
+                $q.all(promises).then(function() {
+                  crmStatus({start: ts('Updating...'), success: ts('Projects enabled successfully')});
+                });
               });
-              $scope.$apply();
             });
         }
       },
@@ -200,13 +205,18 @@
         run: function() {
           CRM.confirm({message: ts("Are you sure you want to Disable the selected Projects?")})
             .on('crmConfirm:yes', function() {
-              $.each($scope.projects, function (index, project) {
-                if (project.selected) {
-                  project.is_active = 0;
-                  crmApi("VolunteerProject", "create", {id: project.id, is_active: project.is_active}, true);
-                }
+              $scope.$apply(function() {
+                var promises = [];
+                _.each($scope.projects, function (project) {
+                  if (project.selected) {
+                    project.is_active = 0;
+                    promises.push(crmApi("VolunteerProject", "create", {id: project.id, is_active: project.is_active}));
+                  }
+                });
+                $q.all(promises).then(function() {
+                  crmStatus({start: ts('Updating...'), success: ts('Projects disabled successfully')});
+                });
               });
-              $scope.$apply();
             });
         }
       },
@@ -215,12 +225,24 @@
         run: function() {
           CRM.confirm({message: ts("Are you sure you want to Delete the selected Projects?")})
             .on('crmConfirm:yes', function() {
-              $.each($scope.projects, function (index, project) {
-                if (project.selected) {
-                  crmApi("VolunteerProject", "delete", {id: project.id}, true).then(function() {
-                    $scope.projects.splice(index, 1);
+              $scope.$apply(function() {
+                var promises = [];
+                var idsToDelete = [];
+
+                _.each($scope.projects, function (project) {
+                  if (project.selected) {
+                    idsToDelete.push(project.id);
+                    promises.push(crmApi("VolunteerProject", "delete", {id: project.id}));
+                  }
+                });
+
+                $q.all(promises).then(function() {
+                  // Remove deleted projects from the array after all deletions complete
+                  $scope.projects = _.reject($scope.projects, function(p) {
+                    return _.contains(idsToDelete, p.id);
                   });
-                }
+                  crmStatus({start: ts('Deleting...'), success: ts('Projects deleted successfully')});
+                });
               });
             });
         }

@@ -420,11 +420,18 @@
       /**
        * Close all menus when clicking outside
        */
-      $(document).on('click', function(e) {
+      var documentClickHandler = function(e) {
         if (!$(e.target).closest('.crm-vol-menu').length) {
-          $scope.activeMenu = null;
-          $scope.$apply();
+          $scope.$apply(function() {
+            $scope.activeMenu = null;
+          });
         }
+      };
+      $(document).on('click', documentClickHandler);
+
+      // Clean up event listener when controller is destroyed
+      $scope.$on('$destroy', function() {
+        $(document).off('click', documentClickHandler);
       });
 
       /**

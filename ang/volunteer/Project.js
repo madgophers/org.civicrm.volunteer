@@ -125,10 +125,14 @@
       case 'eventTab':
         // Phase 2 complete: No longer need to preload Backbone UI
         var cancelCallback = function (projectId) {
-          CRM.$("body").trigger("volunteerProjectCancel");
+          $timeout(function() {
+            CRM.$("body").trigger("volunteerProjectCancel");
+          });
         };
         var saveAndNextCallback = function (projectId) {
-          CRM.$("body").trigger("volunteerProjectSaveComplete", projectId);
+          $timeout(function() {
+            CRM.$("body").trigger("volunteerProjectSaveComplete", projectId);
+          });
         };
         $scope.saveAndNextLabel = ts('Save');
         break;
@@ -219,7 +223,9 @@
         };
 
         $("#crm-vol-location-block .crm-accordion-body").slideDown({complete: function() {
-          $("#crm-vol-location-block .crm-accordion-wrapper").removeClass("collapsed");
+          $scope.$apply(function() {
+            $("#crm-vol-location-block .crm-accordion-wrapper").removeClass("collapsed");
+          });
         }});
       } else {
         //Load the data from the server.
@@ -491,8 +497,16 @@
     };
 
     //Handle Refresh requests
-    CRM.$("body").on("volunteerProjectRefresh", function() {
-      $route.reload();
+    var refreshHandler = function() {
+      $scope.$apply(function() {
+        $route.reload();
+      });
+    };
+    CRM.$("body").on("volunteerProjectRefresh", refreshHandler);
+
+    // Clean up event listener when controller is destroyed
+    $scope.$on('$destroy', function() {
+      CRM.$("body").off("volunteerProjectRefresh", refreshHandler);
     });
 
 
