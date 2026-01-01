@@ -213,9 +213,11 @@
      */
     $scope.$watch('project.loc_block_id', function (newValue) {
       if (newValue == 0) {
+        // Find default country, or use null if no default exists
+        var defaultCountry = _.findWhere(countries, {is_default: "1"});
         $scope.locBlock = {
           address: {
-            country_id: _.findWhere(countries, {is_default: "1"}).id
+            country_id: defaultCountry ? defaultCountry.id : null
           }
         };
 
