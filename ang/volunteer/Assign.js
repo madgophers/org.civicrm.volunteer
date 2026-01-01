@@ -422,9 +422,9 @@
        */
       var documentClickHandler = function(e) {
         if (!$(e.target).closest('.crm-vol-menu').length) {
-          $scope.$apply(function() {
-            $scope.activeMenu = null;
-          });
+          $scope.activeMenu = null;
+          // Use $evalAsync instead of $apply to avoid digest conflicts
+          $scope.$evalAsync();
         }
       };
       $(document).on('click', documentClickHandler);

@@ -221,11 +221,9 @@
           }
         };
 
-        $("#crm-vol-location-block .crm-accordion-body").slideDown({complete: function() {
-          $scope.$apply(function() {
-            $("#crm-vol-location-block .crm-accordion-wrapper").removeClass("collapsed");
-          });
-        }});
+        $("#crm-vol-location-block .crm-accordion-body").slideDown(function() {
+          $("#crm-vol-location-block .crm-accordion-wrapper").removeClass("collapsed");
+        });
       } else {
         //Load the data from the server.
         $scope.refreshLocBlock();
@@ -496,7 +494,7 @@
 
     //Handle Refresh requests
     var refreshHandler = function() {
-      $scope.$apply(function() {
+      $timeout(function() {
         $route.reload();
       });
     };

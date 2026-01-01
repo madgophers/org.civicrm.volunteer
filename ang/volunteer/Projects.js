@@ -202,7 +202,7 @@
         run: function() {
           CRM.confirm({message: ts("Are you sure you want to Enable the selected Projects?")})
             .on('crmConfirm:yes', function() {
-              $scope.$apply(function() {
+              $timeout(function() {
                 var promises = [];
                 _.each($scope.projects, function (project) {
                   if (project.selected) {
@@ -222,7 +222,7 @@
         run: function() {
           CRM.confirm({message: ts("Are you sure you want to Disable the selected Projects?")})
             .on('crmConfirm:yes', function() {
-              $scope.$apply(function() {
+              $timeout(function() {
                 var promises = [];
                 _.each($scope.projects, function (project) {
                   if (project.selected) {
@@ -242,7 +242,7 @@
         run: function() {
           CRM.confirm({message: ts("Are you sure you want to Delete the selected Projects?")})
             .on('crmConfirm:yes', function() {
-              $scope.$apply(function() {
+              $timeout(function() {
                 var promises = [];
                 var idsToDelete = [];
 
