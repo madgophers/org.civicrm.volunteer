@@ -147,9 +147,8 @@
           console.log('[VOLUNTEER] saveAndNextCallback called with projectId:', projectId);
           // Navigate to Define Opportunities Angular view
           // Force full page reload to bypass Angular routing issues
-          var newUrl = CRM.url('civicrm/vol', '', 'front') + '#/volunteer/project/' + projectId + '/needs';
-          console.log('[VOLUNTEER] Forcing full page navigation to:', newUrl);
-          window.location.href = newUrl;
+          console.log('[VOLUNTEER] Using Angular navigation to needs page');
+          $location.path("/volunteer/project/" + projectId + "/needs");
         };
         $scope.saveAndNextLabel = ts('Continue');
     }
