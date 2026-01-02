@@ -64,7 +64,7 @@
     $scope.allSelected = false;
     // TODO for VOL-276: Remove reference to beneficiaries object, based on deprecated API.
     $scope.beneficiaries = beneficiaries;
-    $scope.campaignFilter = CRM.volunteer.campaignFilter;
+    $scope.campaignFilter = (CRM.volunteer && CRM.volunteer.campaignFilter) || {};
     $scope.needBase = CRM.url("civicrm/volunteer/need");
     $scope.assignBase = CRM.url("civicrm/volunteer/assign");
     $scope.urlPublicVolOppSearch = CRM.url('civicrm/vol/', '', 'front') + '#/volunteer/opportunities';

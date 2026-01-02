@@ -171,7 +171,7 @@
       });
     }
 
-    $scope.campaignFilter = CRM.volunteer.campaignFilter;
+    $scope.campaignFilter = (CRM.volunteer && CRM.volunteer.campaignFilter) || {};
     $scope.relationship_types = supporting_data.values.relationship_types;
     $scope.phone_types = supporting_data.values.phone_types;
     $scope.supporting_data = supporting_data.values;

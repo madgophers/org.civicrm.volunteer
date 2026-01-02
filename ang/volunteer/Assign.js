@@ -32,7 +32,12 @@
           });
         },
         volunteerStatus: function() {
-          return CRM.pseudoConstant.volunteer_status || {};
+          // Check if CRM.pseudoConstant exists before accessing
+          if (CRM.pseudoConstant && CRM.pseudoConstant.volunteer_status) {
+            return CRM.pseudoConstant.volunteer_status;
+          }
+          // Fallback to empty object
+          return {};
         }
       }
     });
