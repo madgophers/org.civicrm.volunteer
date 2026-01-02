@@ -10,15 +10,24 @@
 
     // Show/hide "loading" spinner between routes
     .run(function($rootScope) {
-      $rootScope.$on('$routeChangeStart', function() {
+      $rootScope.$on('$routeChangeStart', function(event, next, current) {
+        console.log('[VOLUNTEER] $routeChangeStart', {
+          from: current ? current.$$route.originalPath : 'none',
+          to: next ? next.$$route.originalPath : 'none'
+        });
         CRM.$('#crm-main-content-wrapper').block();
       });
 
-      $rootScope.$on('$routeChangeSuccess', function() {
+      $rootScope.$on('$routeChangeSuccess', function(event, current, previous) {
+        console.log('[VOLUNTEER] $routeChangeSuccess', {
+          from: previous ? previous.$$route.originalPath : 'none',
+          to: current ? current.$$route.originalPath : 'none'
+        });
         CRM.$('#crm-main-content-wrapper').unblock();
       });
 
-      $rootScope.$on('$routeChangeError', function() {
+      $rootScope.$on('$routeChangeError', function(event, current, previous, rejection) {
+        console.error('[VOLUNTEER] $routeChangeError', rejection);
         CRM.$('#crm-main-content-wrapper').unblock();
       });
 

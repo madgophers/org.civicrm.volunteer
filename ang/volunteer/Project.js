@@ -146,13 +146,10 @@
         var saveAndNextCallback = function (projectId) {
           console.log('[VOLUNTEER] saveAndNextCallback called with projectId:', projectId);
           // Navigate to Define Opportunities Angular view
-          // Use $timeout with 0 delay to defer navigation outside current digest cycle
-          $timeout(function() {
-            console.log('[VOLUNTEER] $timeout callback executing, navigating to needs');
-            console.log('[VOLUNTEER] Current path:', $location.path());
-            $location.path("/volunteer/project/" + projectId + "/needs");
-            console.log('[VOLUNTEER] New path set:', $location.path());
-          }, 0);
+          // Force full page reload to bypass Angular routing issues
+          var newUrl = CRM.url('civicrm/vol', '', 'front') + '#/volunteer/project/' + projectId + '/needs';
+          console.log('[VOLUNTEER] Forcing full page navigation to:', newUrl);
+          window.location.href = newUrl;
         };
         $scope.saveAndNextLabel = ts('Continue');
     }
