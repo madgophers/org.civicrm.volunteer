@@ -38,8 +38,7 @@
               type="text"
               id="search-group"
               ng-model="search.criteria.group_id"
-              crm-entityref="{entity: 'Group', select: {allowClear: true}}"
-              placeholder="{{:: ts('- any group -') }}"
+              crm-entityref="{entity: 'Group', select: {allowClear: true, placeholder: ts('- any group -')}}"
               class="crm-form-text big">
           </div>
         </div>
@@ -228,8 +227,7 @@
         type="text"
         ng-model="flexibleNeed.newVolunteer"
         ng-change="addVolunteer(flexibleNeed, flexibleNeed.newVolunteer); flexibleNeed.newVolunteer = ''"
-        crm-entityref="{entity: 'Contact', create: true, select: {allowClear: true}}"
-        placeholder="{{:: ts('Add Volunteer...') }}"
+        crm-entityref="{entity: 'Contact', create: true, select: {allowClear: true, placeholder: ts('Add Volunteer...')}}"
         class="crm-form-text crm-action-menu action-icon-plus"
         style="width: 100%; max-width: 30em;">
     </div>
