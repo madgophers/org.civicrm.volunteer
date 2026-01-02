@@ -139,11 +139,20 @@
 
       default:
         var cancelCallback = function (projectId) {
-          $location.path("/volunteer/manage");
+          $timeout(function() {
+            $location.path("/volunteer/manage");
+          }, 0);
         };
         var saveAndNextCallback = function (projectId) {
+          console.log('[VOLUNTEER] saveAndNextCallback called with projectId:', projectId);
           // Navigate to Define Opportunities Angular view
-          $location.path("/volunteer/project/" + projectId + "/needs");
+          // Use $timeout with 0 delay to defer navigation outside current digest cycle
+          $timeout(function() {
+            console.log('[VOLUNTEER] $timeout callback executing, navigating to needs');
+            console.log('[VOLUNTEER] Current path:', $location.path());
+            $location.path("/volunteer/project/" + projectId + "/needs");
+            console.log('[VOLUNTEER] New path set:', $location.path());
+          }, 0);
         };
         $scope.saveAndNextLabel = ts('Continue');
     }
@@ -464,20 +473,28 @@
           // Update the project ID in case this was a new project
           $scope.project.id = projectId;
           crmUiAlert({text: ts('Changes saved successfully'), title: ts('Saved'), type: 'success'});
-          $location.path("/volunteer/manage");
+          $timeout(function() {
+            $location.path("/volunteer/manage");
+          }, 0);
         }
       });
     };
 
     $scope.saveAndNext = function() {
+      console.log('[VOLUNTEER] saveAndNext clicked');
       doSave().then(function(projectId) {
+        console.log('[VOLUNTEER] doSave resolved, projectId:', projectId);
         if (projectId) {
           // Update the project ID in case this was a new project
           $scope.project.id = projectId;
           crmUiAlert({text: ts('Changes saved successfully'), title: ts('Saved'), type: 'success'});
+          console.log('[VOLUNTEER] About to call saveAndNextCallback');
           // Navigate to next step
           saveAndNextCallback(projectId);
+          console.log('[VOLUNTEER] saveAndNextCallback completed');
         }
+      }).catch(function(error) {
+        console.error('[VOLUNTEER] doSave failed:', error);
       });
     };
 
