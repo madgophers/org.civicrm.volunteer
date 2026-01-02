@@ -32,7 +32,12 @@
         },
         visibilityOptions: function() {
           // Visibility constants from CiviCRM
-          return CRM.pseudoConstant.volunteer_need_visibility || {
+          // Check if CRM.pseudoConstant exists and has the needed property
+          if (CRM.pseudoConstant && CRM.pseudoConstant.volunteer_need_visibility) {
+            return CRM.pseudoConstant.volunteer_need_visibility;
+          }
+          // Fallback to default values
+          return {
             public: '1',
             admin: '2'
           };
