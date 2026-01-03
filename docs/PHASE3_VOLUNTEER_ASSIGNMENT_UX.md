@@ -74,63 +74,317 @@ Scheduled Shift Section:
 
 ### Database Schema Additions
 
-**New Table: `civicrm_volunteer_availability`**
+**Unified Availability Table (Recommended Approach)**
+
+Single table handles both recurring availability patterns AND specific blackout periods:
+
 ```sql
 CREATE TABLE `civicrm_volunteer_availability` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
   `contact_id` int unsigned NOT NULL COMMENT 'FK to civicrm_contact',
-  `day_of_week` tinyint COMMENT '0=Sunday, 1=Monday, ... 6=Saturday',
-  `start_time` time COMMENT 'Start time for this availability slot',
-  `end_time` time COMMENT 'End time for this availability slot',
-  `start_date` date COMMENT 'Optional: availability starts on this date',
-  `end_date` date COMMENT 'Optional: availability ends on this date',
+  `availability_type` varchar(20) NOT NULL
+    COMMENT 'recurring_available, recurring_unavailable, specific_blackout',
+
+  -- Recurring pattern fields (for recurring types)
+  `day_of_week` tinyint DEFAULT NULL
+    COMMENT '0=Sun, 1=Mon, ..., 6=Sat (NULL for specific dates)',
+  `recurrence_start_date` date DEFAULT NULL
+    COMMENT 'When this recurring pattern starts (optional)',
+  `recurrence_end_date` date DEFAULT NULL
+    COMMENT 'When this recurring pattern ends (optional)',
+
+  -- Time range (used by all types)
+  `start_time` time NOT NULL COMMENT 'Start time of availability/unavailability',
+  `end_time` time NOT NULL COMMENT 'End time of availability/unavailability',
+
+  -- Specific date fields (for blackout type)
+  `specific_start_datetime` datetime DEFAULT NULL
+    COMMENT 'For blackouts: exact start datetime',
+  `specific_end_datetime` datetime DEFAULT NULL
+    COMMENT 'For blackouts: exact end datetime',
+
+  `reason` varchar(255) DEFAULT NULL
+    COMMENT 'Optional: "On vacation", "Lunch break", etc.',
   `is_active` tinyint NOT NULL DEFAULT 1,
   `created` timestamp DEFAULT CURRENT_TIMESTAMP,
   `last_updated` timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
   PRIMARY KEY (`id`),
-  CONSTRAINT FK_civicrm_volunteer_availability_contact_id
+  KEY `idx_contact_type` (`contact_id`, `availability_type`),
+  KEY `idx_day_of_week` (`day_of_week`),
+  KEY `idx_specific_dates` (`specific_start_datetime`, `specific_end_datetime`),
+
+  CONSTRAINT FK_civicrm_volunteer_availability_contact
     FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB;
-
-CREATE INDEX idx_contact_id ON civicrm_volunteer_availability (contact_id);
-CREATE INDEX idx_day_of_week ON civicrm_volunteer_availability (day_of_week);
 ```
 
-**New Table: `civicrm_volunteer_blackout`**
-```sql
-CREATE TABLE `civicrm_volunteer_blackout` (
-  `id` int unsigned NOT NULL AUTO_INCREMENT,
-  `contact_id` int unsigned NOT NULL COMMENT 'FK to civicrm_contact',
-  `start_datetime` datetime NOT NULL COMMENT 'Start of unavailable period',
-  `end_datetime` datetime NOT NULL COMMENT 'End of unavailable period',
-  `reason` varchar(255) COMMENT 'Optional reason for blackout',
-  `created` timestamp DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  CONSTRAINT FK_civicrm_volunteer_blackout_contact_id
-    FOREIGN KEY (`contact_id`) REFERENCES `civicrm_contact`(`id`) ON DELETE CASCADE
-) ENGINE=InnoDB;
+**Why Single Table?**
+- ✅ Handles all use cases: "Mondays 8-4", "evenings", "vacation", "seasonal"
+- ✅ Simpler code - one source of truth
+- ✅ Extensible - can add new types like "preferred" or "maybe"
+- ✅ Natural UI flow - volunteers manage all availability in one place
+- ⚠️ Some NULL fields depending on type (acceptable trade-off)
 
-CREATE INDEX idx_blackout_contact ON civicrm_volunteer_blackout (contact_id);
-CREATE INDEX idx_blackout_dates ON civicrm_volunteer_blackout (start_datetime, end_datetime);
+### Real-World Data Examples
+
+**Example 1: "Mondays 8am-4pm"**
+```sql
+INSERT INTO civicrm_volunteer_availability VALUES (
+  contact_id = 123,
+  availability_type = 'recurring_available',
+  day_of_week = 1,                    -- Monday
+  start_time = '08:00:00',
+  end_time = '16:00:00',
+  recurrence_start_date = NULL,       -- ongoing
+  recurrence_end_date = NULL,
+  specific_start_datetime = NULL,
+  specific_end_datetime = NULL,
+  reason = NULL
+);
+```
+
+**Example 2: "Mon, Tue, Wed evenings (6pm-10pm)"**
+UI creates 3 rows automatically:
+```sql
+-- Row 1: Monday evenings
+INSERT ... (day_of_week=1, start_time='18:00', end_time='22:00')
+-- Row 2: Tuesday evenings
+INSERT ... (day_of_week=2, start_time='18:00', end_time='22:00')
+-- Row 3: Wednesday evenings
+INSERT ... (day_of_week=3, start_time='18:00', end_time='22:00')
+```
+
+**Example 3: "Mondays 8am-12pm and 2pm-6pm (lunch break)"**
+UI creates 2 rows for split availability:
+```sql
+-- Morning shift
+INSERT ... (day_of_week=1, start_time='08:00', end_time='12:00')
+-- Afternoon shift
+INSERT ... (day_of_week=1, start_time='14:00', end_time='18:00')
+```
+
+**Example 4: "On vacation July 1-15, 2026"**
+```sql
+INSERT INTO civicrm_volunteer_availability VALUES (
+  contact_id = 123,
+  availability_type = 'specific_blackout',
+  day_of_week = NULL,                 -- not recurring
+  start_time = '00:00:00',            -- all day
+  end_time = '23:59:59',
+  recurrence_start_date = NULL,
+  recurrence_end_date = NULL,
+  specific_start_datetime = '2026-07-01 00:00:00',
+  specific_end_datetime = '2026-07-15 23:59:59',
+  reason = 'On vacation'
+);
+```
+
+**Example 5: "Available Saturdays June-September (seasonal)"**
+```sql
+INSERT ... (
+  availability_type = 'recurring_available',
+  day_of_week = 6,                    -- Saturday
+  start_time = '09:00:00',
+  end_time = '17:00:00',
+  recurrence_start_date = '2026-06-01',  -- summer only
+  recurrence_end_date = '2026-09-30',
+  specific_start_datetime = NULL,
+  specific_end_datetime = NULL,
+  reason = 'Summer availability'
+)
+```
+
+**Example 6: "Never available Sundays (recurring unavailability)"**
+```sql
+INSERT ... (
+  availability_type = 'recurring_unavailable',
+  day_of_week = 0,                    -- Sunday
+  start_time = '00:00:00',            -- all day
+  end_time = '23:59:59',
+  reason = 'Family time'
+)
+```
+
+### UI Design for Availability Entry
+
+**Simple Interface (Public Signup):**
+```
+┌──────────────────────────────────────────────────────────┐
+│ When are you available to volunteer?                    │
+├──────────────────────────────────────────────────────────┤
+│                                                          │
+│ ○ Regular Weekly Availability                           │
+│   ☑ Monday     From: [08:00] To: [16:00]               │
+│   ☐ Tuesday    From: [__:__] To: [__:__]               │
+│   ☑ Wednesday  From: [18:00] To: [22:00]               │
+│   ☐ Thursday   From: [__:__] To: [__:__]               │
+│   ☐ Friday     From: [__:__] To: [__:__]               │
+│   ☐ Saturday   From: [__:__] To: [__:__]               │
+│   ☐ Sunday     From: [__:__] To: [__:__]               │
+│                                                          │
+│   [+ Add another time block for selected days]          │
+│                                                          │
+│ ○ Times I'm NOT Available                               │
+│   From: [____-__-__ __:__] To: [____-__-__ __:__]      │
+│   Reason: [________________________]                     │
+│   [+ Add another blackout period]                       │
+│                                                          │
+│ [Save My Availability]                                   │
+└──────────────────────────────────────────────────────────┘
+```
+
+**Advanced Interface (Admin/Volunteer Profile):**
+```
+┌──────────────────────────────────────────────────────────┐
+│ Volunteer Availability for: John Doe                    │
+├──────────────────────────────────────────────────────────┤
+│ Regular Weekly Schedule:                                │
+│ ┌────────────────────────────────────────────────────┐  │
+│ │ ✓ Monday    08:00 - 12:00  [Edit] [Remove]        │  │
+│ │ ✓ Monday    14:00 - 18:00  [Edit] [Remove]        │  │
+│ │ ✓ Wednesday 18:00 - 22:00  [Edit] [Remove]        │  │
+│ │ ✗ Sunday    (Never available)      [Remove]       │  │
+│ └────────────────────────────────────────────────────┘  │
+│ [+ Add Weekly Availability]                             │
+│                                                          │
+│ Seasonal/Temporary Availability:                        │
+│ ┌────────────────────────────────────────────────────┐  │
+│ │ ✓ Saturdays (Jun 1 - Sep 30) 09:00-17:00 [Remove]│  │
+│ └────────────────────────────────────────────────────┘  │
+│ [+ Add Seasonal Availability]                           │
+│                                                          │
+│ Blackout Periods (Unavailable):                         │
+│ ┌────────────────────────────────────────────────────┐  │
+│ │ ✗ Jul 1-15, 2026  "On vacation"       [Remove]    │  │
+│ │ ✗ Dec 20-31, 2026 "Holiday travel"    [Remove]    │  │
+│ └────────────────────────────────────────────────────┘  │
+│ [+ Add Blackout Period]                                 │
+│                                                          │
+│ [Save Changes]                                           │
+└──────────────────────────────────────────────────────────┘
+```
+
+### Query Examples
+
+**Check if volunteer is available for Tuesday Jan 7, 2026 at 2pm-6pm:**
+```sql
+SELECT
+  contact_id,
+  CASE
+    -- First check for specific blackouts
+    WHEN EXISTS (
+      SELECT 1 FROM civicrm_volunteer_availability
+      WHERE contact_id = 123
+        AND availability_type = 'specific_blackout'
+        AND specific_start_datetime <= '2026-01-07 18:00:00'
+        AND specific_end_datetime >= '2026-01-07 14:00:00'
+        AND is_active = 1
+    ) THEN 'Blacked Out'
+
+    -- Check recurring unavailability
+    WHEN EXISTS (
+      SELECT 1 FROM civicrm_volunteer_availability
+      WHERE contact_id = 123
+        AND availability_type = 'recurring_unavailable'
+        AND day_of_week = 2  -- Tuesday
+        AND start_time <= '14:00:00'
+        AND end_time >= '18:00:00'
+        AND is_active = 1
+    ) THEN 'Not Available (Recurring)'
+
+    -- Check recurring availability
+    WHEN EXISTS (
+      SELECT 1 FROM civicrm_volunteer_availability
+      WHERE contact_id = 123
+        AND availability_type = 'recurring_available'
+        AND day_of_week = 2  -- Tuesday
+        AND start_time <= '14:00:00'
+        AND end_time >= '18:00:00'
+        AND is_active = 1
+        AND (recurrence_start_date IS NULL OR recurrence_start_date <= '2026-01-07')
+        AND (recurrence_end_date IS NULL OR recurrence_end_date >= '2026-01-07')
+    ) THEN 'Available'
+
+    ELSE 'No Data - Ask Volunteer'
+  END as availability_status
+FROM civicrm_contact
+WHERE id = 123;
+```
+
+**Get all volunteers available for a specific shift:**
+```sql
+SELECT
+  c.id,
+  c.display_name,
+  GROUP_CONCAT(
+    CASE a.availability_type
+      WHEN 'recurring_available' THEN CONCAT(
+        DAYNAME(STR_TO_DATE(a.day_of_week + 1, '%w')),
+        ' ',
+        a.start_time,
+        '-',
+        a.end_time
+      )
+      WHEN 'specific_blackout' THEN CONCAT(
+        'Unavailable: ',
+        DATE_FORMAT(a.specific_start_datetime, '%b %d'),
+        ' - ',
+        DATE_FORMAT(a.specific_end_datetime, '%b %d')
+      )
+    END
+    SEPARATOR '; '
+  ) as availability_notes
+FROM civicrm_contact c
+LEFT JOIN civicrm_volunteer_availability a ON c.id = a.contact_id AND a.is_active = 1
+WHERE c.contact_type = 'Individual'
+  -- Available for Tuesday 2-6pm
+  AND EXISTS (
+    SELECT 1 FROM civicrm_volunteer_availability va
+    WHERE va.contact_id = c.id
+      AND va.availability_type = 'recurring_available'
+      AND va.day_of_week = 2
+      AND va.start_time <= '14:00:00'
+      AND va.end_time >= '18:00:00'
+  )
+  -- NOT blacked out on specific date
+  AND NOT EXISTS (
+    SELECT 1 FROM civicrm_volunteer_availability ba
+    WHERE ba.contact_id = c.id
+      AND ba.availability_type = 'specific_blackout'
+      AND ba.specific_start_datetime <= '2026-01-07 18:00:00'
+      AND ba.specific_end_datetime >= '2026-01-07 14:00:00'
+  )
+GROUP BY c.id, c.display_name
+ORDER BY c.display_name;
 ```
 
 ### Features
 
 **1. Availability Capture on Public Signup**
-- Volunteers can select:
-  - Days/times they're generally available
-  - Specific date ranges they cannot volunteer (vacations, etc.)
-- Stored in new tables
+- Simple checkbox interface for recurring weekly availability
+- Multiple time blocks per day (e.g., morning AND afternoon)
+- Blackout period entry (vacation, unavailability, etc.)
+- All data stored in single unified table with different `availability_type` values
 
 **2. Smart Filtering in Admin Assignment**
-- When assigning to a shift at specific date/time:
-  - Only show volunteers who:
-    - Are available that day/time (recurring availability)
-    - Don't have a blackout during that period
-    - Aren't already assigned to a conflicting shift
-  - Grayed out volunteers with reason: "Not available Tuesdays" or "On vacation"
+When assigning to a shift at specific date/time, the system will:
+- Query volunteers with `recurring_available` matching that day/time
+- Exclude volunteers with `specific_blackout` during that period
+- Exclude volunteers with `recurring_unavailable` for that day/time
+- Show availability status for each volunteer:
+  - 🟢 **Available:** Has recurring availability, no conflicts
+  - 🔴 **Not Available:** Blacked out or recurring unavailability
+  - 🟡 **Partial:** Available some days but not others
+  - ⚪ **Unknown:** No availability data provided
 
-**3. Calendar/Schedule UI (Option C - Long-term)**
+**3. Volunteer Profile Management**
+- Volunteers can manage their own availability via profile page
+- Admins can view/edit availability on behalf of volunteers
+- List view shows all availability rules with easy edit/remove
+- Categories: Regular Weekly, Seasonal, Blackouts
+
+**4. Calendar/Schedule UI (Option C - Long-term)**
 
 **Reference: MyShift / Easy Appointments Style**
 ```
@@ -262,6 +516,6 @@ Click [+Add] or drag volunteers from sidebar:
 4. **Prototype Phase 4 calendar** - Visual mockup for feedback
 5. **Research integrations** - MyShift/Easy Appointments investigation
 
-**Status:** Draft - Awaiting User Feedback
+**Status:** Draft - Schema Updated to Option C (Unified Table)
 **Created:** 2026-01-02
-**Last Updated:** 2026-01-02
+**Last Updated:** 2026-01-03
