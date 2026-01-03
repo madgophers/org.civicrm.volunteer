@@ -142,9 +142,11 @@
 
   <!-- Flexible Volunteers Section -->
   <div class="crm-vol-assign-flexible" ng-if="flexibleNeed">
-    <h3>{{:: ts('Available Volunteers') }}</h3>
+    <!-- Only show heading and table if there are assignments -->
+    <div ng-if="flexibleNeed.assignments && flexibleNeed.assignments.length > 0">
+      <h3>{{:: ts('Available Volunteers') }}</h3>
 
-    <table class="crm-vol-assignment-table row-highlight">
+      <table class="crm-vol-assignment-table row-highlight">
       <thead>
         <tr>
           <th>{{:: ts('Name') }}</th>
@@ -219,6 +221,7 @@
         </tr>
       </tbody>
     </table>
+    </div>
 
     <!-- Add Volunteer -->
     <hr style="margin: 1em 1px;">
