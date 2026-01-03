@@ -5,72 +5,26 @@
     <h3>{{:: ts('Assign Volunteers') }} - {{ project.title }}</h3>
   </div>
 
-  <!-- Flexible Volunteers Section -->
-  <div class="crm-vol-assign-flexible" ng-if="flexibleNeed">
-    <!-- Only show heading and table if there are assignments -->
-    <div ng-if="flexibleNeed.assignments && flexibleNeed.assignments.length > 0">
-      <h3>{{:: ts('Available Volunteers') }}</h3>
-
-      <table class="crm-vol-assignment-table row-highlight">
-      <thead>
-        <tr>
-          <th>{{:: ts('Name') }}</th>
-        </tr>
-      </thead>
-      <tbody>
-        <!-- Assigned Volunteers -->
-        <tr ng-repeat="assignment in flexibleNeed.assignments"
-            class="crm-vol-assignment"
-            ng-class="{'odd': $even, 'even': $odd}">
-          <td class="crm-vol-name">
-            <span class="icon crm-vol-drag"></span>
-            <a target="_blank" href="/civicrm/contact/view?reset=1&cid={{assignment.contact_id}}">
-              {{ assignment.display_name }}
-            </a>
-            <a href="#"
-               ng-if="assignment.details"
-               ng-click="showDetails($event, assignment)"
-               class="icon crm-vol-info"
-               title="{{:: ts('View Details') }}">
-            </a>
-
-            <!-- Simple Remove Button -->
-            <a href="#"
-               ng-click="removeVolunteer(flexibleNeed, assignment); $event.preventDefault();"
-               class="crm-vol-remove"
-               title="{{:: ts('Remove') }}">
-              &times;
-            </a>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-    </div>
-
-    <!-- Add Volunteer -->
-    <hr style="margin: 1em 1px;">
-    <div class="crm-vol-add-volunteer">
-      <input
-        type="text"
-        ng-model="flexibleNeed.newVolunteer"
-        ng-change="addVolunteer(flexibleNeed, flexibleNeed.newVolunteer); flexibleNeed.newVolunteer = ''"
-        crm-entityref="{entity: 'Contact', create: true, select: {allowClear: true, placeholder: ts('Add Volunteer...')}}"
-        class="crm-form-text crm-action-menu action-icon-plus"
-        style="width: 100%; max-width: 30em;">
-    </div>
-  </div>
-
   <!-- Scheduled Needs Section -->
   <div class="crm-vol-assign-scheduled">
     <div ng-repeat="need in scheduledNeeds" class="crm-vol-need crm-form-block">
 
-      <!-- Need Header -->
+      <!-- Need Header with Add Volunteer -->
       <div class="crm-vol-need-header">
         <h3>
           {{ roles[need.role_id] }}
           (<span ng-if="need.quantity">{{ need.quantity }}</span><span ng-if="!need.quantity">{{:: ts('Any') }}</span>):
           {{ need.display_time }}
         </h3>
+        <div class="crm-vol-add-volunteer-inline">
+          <input
+            type="text"
+            ng-model="need.newVolunteer"
+            ng-change="addVolunteer(need, need.newVolunteer); need.newVolunteer = ''"
+            crm-entityref="{entity: 'Contact', create: true, select: {allowClear: true, placeholder: ts('Add Volunteer...')}}"
+            class="crm-form-text crm-action-menu action-icon-plus"
+            style="width: 300px;">
+        </div>
       </div>
 
       <!-- Assignments Table -->
@@ -130,18 +84,6 @@
         </tbody>
       </table>
 
-      <!-- Add Volunteer to Scheduled Shift -->
-      <hr style="margin: 1em 1px;">
-      <div class="crm-vol-add-volunteer">
-        <input
-          type="text"
-          ng-model="need.newVolunteer"
-          ng-change="addVolunteer(need, need.newVolunteer); need.newVolunteer = ''"
-          crm-entityref="{entity: 'Contact', create: true, select: {allowClear: true, placeholder: ts('Add Volunteer...')}}"
-          class="crm-form-text crm-action-menu action-icon-plus"
-          style="width: 100%; max-width: 30em;">
-      </div>
-
     </div>
 
     <!-- No Scheduled Needs Message -->
@@ -171,5 +113,15 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 10px;
+}
+
+.crm-vol-need-header h3 {
+  margin: 0;
+  padding: 0;
+}
+
+.crm-vol-add-volunteer-inline {
+  flex-shrink: 0;
+  margin-left: 20px;
 }
 </style>

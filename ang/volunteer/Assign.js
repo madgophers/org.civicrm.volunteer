@@ -52,12 +52,15 @@
       $scope.roles = roles;
       $scope.volunteerStatus = volunteerStatus;
 
-      // Separate scheduled and flexible needs
+      // Process scheduled needs from API
       $scope.scheduledNeeds = [];
-      $scope.flexibleNeed = null;
 
-      // Process needs from API
       _.each(needs, function(need) {
+        // Skip flexible needs - we only show scheduled shifts
+        if (need.is_flexible == '1') {
+          return;
+        }
+
         // Parse assignments for each need
         need.assignments = _.values(need['api.volunteer_assignment.get'].values || {});
 
@@ -67,24 +70,10 @@
         need.vacancyCount = need.quantity > need.assignedCount ? need.quantity - need.assignedCount : 0;
         need.hasVacancies = need.vacancyCount > 0;
 
-        if (need.is_flexible == '1') {
-          $scope.flexibleNeed = need;
-        } else {
-          // Format display time
-          need.display_time = formatNeedTime(need);
-          $scope.scheduledNeeds.push(need);
-        }
+        // Format display time
+        need.display_time = formatNeedTime(need);
+        $scope.scheduledNeeds.push(need);
       });
-
-      // If no flexible need exists, create placeholder
-      if (!$scope.flexibleNeed) {
-        $scope.flexibleNeed = {
-          id: 0,
-          project_id: project.id,
-          is_flexible: '1',
-          assignments: []
-        };
-      }
 
       /**
        * Format time display for a need
