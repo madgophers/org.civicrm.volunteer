@@ -185,7 +185,7 @@
                       <li ng-repeat="target in getAvailableTargets(flexibleNeed, assignment)">
                         <a href="#"
                            ng-click="moveVolunteer(flexibleNeed, assignment, target.need); activeMenu = null; $event.preventDefault();">
-                          <strong>{{ target.label }}</strong> {{ target.time }}
+                          {{ target.displayText }}
                         </a>
                       </li>
                     </ul>
@@ -198,7 +198,7 @@
                       <li ng-repeat="target in getAvailableTargets(flexibleNeed, assignment)">
                         <a href="#"
                            ng-click="copyVolunteer(flexibleNeed, assignment, target.need); activeMenu = null; $event.preventDefault();">
-                          <strong>{{ target.label }}</strong> {{ target.time }}
+                          {{ target.displayText }}
                         </a>
                       </li>
                     </ul>
@@ -300,7 +300,7 @@
                         <li ng-repeat="target in getAvailableTargets(need, assignment)">
                           <a href="#"
                              ng-click="moveVolunteer(need, assignment, target.need); activeMenu = null; $event.preventDefault();">
-                            <strong>{{ target.label }}</strong> {{ target.time }}
+                            {{ target.displayText }}
                           </a>
                         </li>
                       </ul>
@@ -313,7 +313,7 @@
                         <li ng-repeat="target in getAvailableTargets(need, assignment)">
                           <a href="#"
                              ng-click="copyVolunteer(need, assignment, target.need); activeMenu = null; $event.preventDefault();">
-                            <strong>{{ target.label }}</strong> {{ target.time }}
+                            {{ target.displayText }}
                           </a>
                         </li>
                       </ul>

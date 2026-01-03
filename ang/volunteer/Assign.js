@@ -144,6 +144,20 @@
           return;
         }
 
+        // Check if volunteer is already assigned to this need
+        var alreadyAssigned = _.find(need.assignments, function(assignment) {
+          return assignment.contact_id == contactId;
+        });
+
+        if (alreadyAssigned) {
+          crmUiAlert({
+            text: ts('This volunteer is already assigned to this opportunity.'),
+            title: ts('Already Assigned'),
+            type: 'warning'
+          });
+          return Promise.resolve();
+        }
+
         // Check for conflicts using Phase 1 conflict detection
         return checkConflicts(contactId, need).then(function() {
           var statusId = getStatusId(need.is_flexible == '1' ? 'Available' : 'Scheduled');
@@ -383,7 +397,8 @@
         targets.push({
           need: $scope.flexibleNeed,
           label: ts('Available Volunteers'),
-          time: ''
+          time: '',
+          displayText: ts('Available Volunteers')
         });
 
         // Add scheduled needs with vacancies
@@ -399,10 +414,20 @@
               return a.contact_id == assignment.contact_id;
             });
             if (!alreadyAssigned) {
+              // Create user-friendly display text
+              var roleName = roles[need.role_id];
+              var displayText = roleName;
+
+              // Add time/date info in parentheses for clarity
+              if (need.display_time) {
+                displayText = roleName + ' (' + need.display_time + ')';
+              }
+
               targets.push({
                 need: need,
-                label: roles[need.role_id],
-                time: need.display_time
+                label: roleName,
+                time: need.display_time,
+                displayText: displayText
               });
             }
           }
