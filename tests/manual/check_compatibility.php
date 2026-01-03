@@ -144,29 +144,12 @@ if (is_writable($ext_dir)) {
   $errors[] = "Extensions directory is not writable: $ext_dir";
 }
 
-// CHECK 8: Required Extension (angularprofiles)
-echo "CHECK 8: Required Extensions... ";
-try {
-  $result = civicrm_api3('Extension', 'get', array(
-    'full_name' => 'org.civicrm.angularprofiles',
-    'status' => 'installed',
-  ));
-
-  if ($result['count'] > 0) {
-    echo "✅ PASS (angularprofiles installed)\n";
-    $checks_passed++;
-  } else {
-    echo "⚠️  WARNING (angularprofiles not installed)\n";
-    $warnings[] = "org.civicrm.angularprofiles extension is required";
-  }
-} catch (Exception $e) {
-  echo "⚠️  WARNING (Cannot check extensions)\n";
-  $warnings[] = "Extension check failed: " . $e->getMessage();
-}
+// CHECK 8: No longer needed (angularprofiles dependency removed in Phase 0)
+// This extension now uses native CiviCRM entityRef instead of angularprofiles
 
 // SUMMARY
 echo "\n=== COMPATIBILITY CHECK SUMMARY ===\n\n";
-echo "Checks Passed: $checks_passed/8\n";
+echo "Checks Passed: $checks_passed/7\n";
 
 if (!empty($errors)) {
   echo "\n❌ ERRORS (" . count($errors) . "):\n";

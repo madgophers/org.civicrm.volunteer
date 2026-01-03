@@ -8,8 +8,8 @@
     <author>Madgophers (Independent Fork Maintainer)</author>
     <email>info@madgophers.com</email>
   </maintainer>
-  <releaseDate>2025-12-29</releaseDate>
-  <version>2.6.0</version>
+  <releaseDate>2026-01-02</releaseDate>
+  <version>0.2.0</version>
   <compatibility>
     <ver>6.9.1</ver>
   </compatibility>
@@ -28,7 +28,7 @@
     - Phase 1 (2025): Conflict detection for preventing double-booking
     - Phase 2 (2025): Complete Angular migration - all Backbone/Marionette code removed
 
-    Version 2.6.0 is a Development release for CiviCRM - Stand Alone - 6.9.1+ compatibility.
+    Version 0.2.0 is a Development release for CiviCRM - Stand Alone - 6.9.1+ compatibility.
   </comments>
   <civix>
     <namespace>CRM/Volunteer</namespace>
