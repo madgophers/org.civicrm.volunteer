@@ -156,6 +156,16 @@
           return Promise.resolve();
         }
 
+        // Check if shift is already full (only for scheduled needs with quantity limits)
+        if (need.quantity > 0 && need.assignedCount >= need.quantity) {
+          crmUiAlert({
+            text: ts('This shift is already full (%1 of %1 volunteers assigned).', {1: need.quantity}),
+            title: ts('Shift Full'),
+            type: 'warning'
+          });
+          return Promise.resolve();
+        }
+
         // Check for conflicts using Phase 1 conflict detection
         return checkConflicts(contactId, need).then(function() {
           var statusId = getStatusId(need.is_flexible == '1' ? 'Available' : 'Scheduled');
