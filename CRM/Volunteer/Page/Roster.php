@@ -88,11 +88,12 @@ class CRM_Volunteer_Page_Roster extends CRM_Core_Page {
    * Fuzzy date: Start time, end time, and duration are set. Activity needs to be completed between start time and end
    *   time and take duration minutes. Example: I need 5 hours of filing completed between December 1 and December 31.
    * Just start date: If we just have the start date then we'll compare that to today.
+   * Open-ended: No start time means the assignment is flexible/open-ended - excluded from roster (not scheduled).
    *
    * @param array $assignment
    */
   private function isAssignmentInThePast(array $assignment){
-    // If we don't have the crucial data then we assume that it's not in the future.
+    // If we don't have a start time, this is an open-ended assignment - exclude from roster
     if (empty($assignment['start_time'])) {
       return TRUE;
     }
